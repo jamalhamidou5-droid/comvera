@@ -371,7 +371,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Pour les petits commerçants</div>
             </div>
             <div style={{ fontSize: '2.5rem', fontWeight: 800 }}>
-              49€ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
+              29€ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
             </div>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--text-muted)', listStyle: 'none' }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 1 boutique connectée</li>
@@ -393,7 +393,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Pour les e-commerçants en expansion</div>
             </div>
             <div style={{ fontSize: '2.5rem', fontWeight: 800 }}>
-              149€ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
+              79€ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
             </div>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--text-muted)', listStyle: 'none' }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 3 boutiques connectées</li>
@@ -415,7 +415,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Pour les marques internationales</div>
             </div>
             <div style={{ fontSize: '2.5rem', fontWeight: 800 }}>
-              399€+ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
+              199€+ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
             </div>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--text-muted)', listStyle: 'none' }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Boutiques illimitées</li>

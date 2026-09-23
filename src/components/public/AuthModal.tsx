@@ -25,12 +25,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
     try {
       if (isSignUp) {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         });
         if (signUpError) throw signUpError;
-        // Optionally insert company into a profiles table if needed later
+        
+        // Si Supabase demande de confirmer l'email, la session sera nulle
+        if (data.user && !data.session) {
+          setError("Compte créé avec succès ! Veuillez vérifier vos e-mails pour le confirmer avant de vous connecter.");
+          setIsLoading(false);
+          return;
+        }
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
