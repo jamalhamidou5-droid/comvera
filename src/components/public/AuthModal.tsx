@@ -55,11 +55,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="notranslate modal-overlay" translate="no" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-            {isSignUp ? 'Create your Comvera account' : 'Log in to your account'}
+            {isSignUp ? 'Créer votre compte Comvera' : 'Connexion à votre compte'}
           </h3>
           <button
             onClick={onClose}
@@ -79,12 +79,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: error ? '1rem' : '1.5rem' }}>
           {isSignUp && (
             <div className="input-group">
-              <label className="input-label">Company Name</label>
+              <label className="input-label">Nom de l'entreprise</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Acme International Ltd"
+                  placeholder="Acme International"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   style={{ paddingLeft: '2.5rem' }}
@@ -95,12 +95,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           )}
 
           <div className="input-group">
-            <label className="input-label">Work Email</label>
+            <label className="input-label">Adresse E-mail professionnelle</label>
             <div style={{ position: 'relative' }}>
               <input
                 type="email"
                 className="input-field"
-                placeholder="name@company.com"
+                placeholder="nom@entreprise.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 style={{ paddingLeft: '2.5rem' }}
@@ -111,7 +111,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           </div>
 
           <div className="input-group">
-            <label className="input-label">Password</label>
+            <label className="input-label">Mot de passe</label>
             <div style={{ position: 'relative' }}>
               <input
                 type="password"
@@ -134,25 +134,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
         <div style={{ textAlign: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
           {isSignUp ? (
-            <>
-              Déjà un compte ?{' '}
+            <span>
+              <span>Déjà un compte ?</span>{' '}
               <span
                 style={{ color: 'var(--accent-blue)', cursor: 'pointer', fontWeight: 600 }}
                 onClick={() => { setIsSignUp(false); setError(null); }}
               >
                 Se connecter
               </span>
-            </>
+            </span>
           ) : (
-            <>
-              Pas encore de compte ?{' '}
+            <span>
+              <span>Pas encore de compte ?</span>{' '}
               <span
                 style={{ color: 'var(--accent-blue)', cursor: 'pointer', fontWeight: 600 }}
                 onClick={() => { setIsSignUp(true); setError(null); }}
               >
                 Créer un compte
               </span>
-            </>
+            </span>
           )}
         </div>
       </div>
