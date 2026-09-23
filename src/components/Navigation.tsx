@@ -11,13 +11,15 @@ interface NavigationProps {
   setAdminTab: (tab: AdminTab) => void;
   onOpenAuth: () => void;
   role?: 'client' | 'admin' | null;
+  isLoggedIn?: boolean;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
   mode,
   setMode,
   onOpenAuth,
-  role
+  role,
+  isLoggedIn
 }) => {
   return (
     <nav className="top-nav">
@@ -61,13 +63,15 @@ export const Navigation: React.FC<NavigationProps> = ({
           <UserCheck size={14} />
           Onboarding
         </button>
-        <button
-          className={`mode-btn ${mode === 'client' ? 'active' : ''}`}
-          onClick={() => setMode('client')}
-        >
-          <LayoutDashboard size={14} />
-          Dashboard Client
-        </button>
+        {isLoggedIn && (
+          <button
+            className={`mode-btn ${mode === 'client' ? 'active' : ''}`}
+            onClick={() => setMode('client')}
+          >
+            <LayoutDashboard size={14} />
+            Dashboard Client
+          </button>
+        )}
         {role === 'admin' && (
           <button
             className={`mode-btn ${mode === 'admin' ? 'active' : ''}`}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, Building, ArrowRight } from 'lucide-react';
+import { X, Lock, Mail, Building, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,15 +10,42 @@ interface AuthModalProps {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('alexandre@acmestore.com');
-  const [password, setPassword] = useState('••••••••••••');
-  const [company, setCompany] = useState('Acme Store');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [company, setCompany] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSuccess();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      if (isSignUp) {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (signUpError) throw signUpError;
+        // Optionally insert company into a profiles table if needed later
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (signInError) throw signInError;
+      }
+      
+      onSuccess();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Une erreur est survenue lors de l\'authentification.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,7 +63,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {error && (
+          <div style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+            <AlertCircle size={18} />
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: error ? '1rem' : '1.5rem' }}>
           {isSignUp && (
             <div className="input-group">
               <label className="input-label">Company Name</label>
@@ -85,30 +120,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', padding: '0.75rem' }}>
-            {isSignUp ? 'Create Account' : 'Log In'} <ArrowRight size={16} />
+          <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', padding: '0.75rem' }} disabled={isLoading}>
+            {isLoading ? <Loader2 size={16} className="animate-spin" /> : (isSignUp ? 'Créer le compte' : 'Se connecter')}
+            {!isLoading && <ArrowRight size={16} />}
           </button>
         </form>
 
         <div style={{ textAlign: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
           {isSignUp ? (
             <>
-              Already have an account?{' '}
+              Déjà un compte ?{' '}
               <span
                 style={{ color: 'var(--accent-blue)', cursor: 'pointer', fontWeight: 600 }}
-                onClick={() => setIsSignUp(false)}
+                onClick={() => { setIsSignUp(false); setError(null); }}
               >
-                Log in
+                Se connecter
               </span>
             </>
           ) : (
             <>
-              Don't have an account yet?{' '}
+              Pas encore de compte ?{' '}
               <span
                 style={{ color: 'var(--accent-blue)', cursor: 'pointer', fontWeight: 600 }}
-                onClick={() => setIsSignUp(true)}
+                onClick={() => { setIsSignUp(true); setError(null); }}
               >
-                Sign up
+                Créer un compte
               </span>
             </>
           )}

@@ -91,6 +91,7 @@ export const App: React.FC = () => {
         setAdminTab={setAdminTab}
         onOpenAuth={() => setIsAuthOpen(true)}
         role={role}
+        isLoggedIn={!!user}
       />
 
       <Routes>
