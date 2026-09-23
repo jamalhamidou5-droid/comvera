@@ -90,6 +90,7 @@ export const App: React.FC = () => {
         adminTab={adminTab}
         setAdminTab={setAdminTab}
         onOpenAuth={() => setIsAuthOpen(true)}
+        role={role}
       />
 
       <Routes>

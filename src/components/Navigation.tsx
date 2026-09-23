@@ -10,12 +10,14 @@ interface NavigationProps {
   adminTab: AdminTab;
   setAdminTab: (tab: AdminTab) => void;
   onOpenAuth: () => void;
+  role?: 'client' | 'admin' | null;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
   mode,
   setMode,
-  onOpenAuth
+  onOpenAuth,
+  role
 }) => {
   return (
     <nav className="top-nav">
@@ -66,13 +68,15 @@ export const Navigation: React.FC<NavigationProps> = ({
           <LayoutDashboard size={14} />
           Dashboard Client
         </button>
-        <button
-          className={`mode-btn ${mode === 'admin' ? 'active' : ''}`}
-          onClick={() => setMode('admin')}
-        >
-          <Database size={14} />
-          Admin Platform
-        </button>
+        {role === 'admin' && (
+          <button
+            className={`mode-btn ${mode === 'admin' ? 'active' : ''}`}
+            onClick={() => setMode('admin')}
+          >
+            <Database size={14} />
+            Admin Platform
+          </button>
+        )}
       </div>
 
       {/* Right side CTA */}
