@@ -147,6 +147,10 @@ export const App: React.FC = () => {
         onOpenAuth={() => setIsAuthOpen(true)}
         role={role}
         isLoggedIn={!!user}
+        onSignOut={async () => {
+          await supabase.auth.signOut();
+          navigate('/');
+        }}
       />
 
       <Routes>

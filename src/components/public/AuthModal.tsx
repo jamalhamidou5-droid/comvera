@@ -9,7 +9,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot_password'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
@@ -24,7 +24,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
+      if (authMode === 'signup') {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -37,12 +37,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           setIsLoading(false);
           return;
         }
-      } else {
+      } else if (authMode === 'login') {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (signInError) throw signInError;
+      } else if (authMode === 'forgot_password') {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin,
+        });
+        if (resetError) throw resetError;
+        setError("Un e-mail de réinitialisation vous a été envoyé. Vérifiez votre boîte de réception.");
+        setIsLoading(false);
+        return;
       }
       
       onSuccess();
@@ -59,7 +67,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-            {isSignUp ? 'Créer votre compte Comvera' : 'Connexion à votre compte'}
+            {authMode === 'signup' ? 'Créer votre compte Comvera' : 
+             authMode === 'forgot_password' ? 'Réinitialiser le mot de passe' : 
+             'Connexion à votre compte'}
           </h3>
           <button
             onClick={onClose}
@@ -77,7 +87,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: error ? '1rem' : '1.5rem' }}>
-          {isSignUp && (
+          {authMode === 'signup' && (
             <div className="input-group">
               <label className="input-label">Nom de l'entreprise</label>
               <div style={{ position: 'relative' }}>
@@ -110,37 +120,62 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             </div>
           </div>
 
-          <div className="input-group">
-            <label className="input-label">Mot de passe</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="password"
-                className="input-field"
-                placeholder="••••••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ paddingLeft: '2.5rem' }}
-                required
-              />
-              <Lock size={16} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
+          {authMode !== 'forgot_password' && (
+            <div className="input-group">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                <label className="input-label" style={{ marginBottom: 0 }}>Mot de passe</label>
+                {authMode === 'login' && (
+                  <span 
+                    style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', cursor: 'pointer' }}
+                    onClick={() => { setAuthMode('forgot_password'); setError(null); }}
+                  >
+                    Mot de passe oublié ?
+                  </span>
+                )}
+              </div>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="password"
+                  className="input-field"
+                  placeholder="••••••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{ paddingLeft: '2.5rem' }}
+                  required
+                />
+                <Lock size={16} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
+              </div>
             </div>
-          </div>
+          )}
 
           <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', padding: '0.75rem' }} disabled={isLoading}>
-            {isLoading ? <Loader2 size={16} className="animate-spin" /> : (isSignUp ? 'Créer le compte' : 'Se connecter')}
+            {isLoading ? <Loader2 size={16} className="animate-spin" /> : (
+              authMode === 'signup' ? 'Créer le compte' : 
+              authMode === 'forgot_password' ? 'Envoyer le lien' : 
+              'Se connecter'
+            )}
             {!isLoading && <ArrowRight size={16} />}
           </button>
         </form>
 
         <div style={{ textAlign: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          {isSignUp ? (
+          {authMode === 'signup' ? (
             <span>
               <span>Déjà un compte ?</span>{' '}
               <span
                 style={{ color: 'var(--accent-blue)', cursor: 'pointer', fontWeight: 600 }}
-                onClick={() => { setIsSignUp(false); setError(null); }}
+                onClick={() => { setAuthMode('login'); setError(null); }}
               >
                 Se connecter
+              </span>
+            </span>
+          ) : authMode === 'forgot_password' ? (
+            <span>
+              <span
+                style={{ color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 500 }}
+                onClick={() => { setAuthMode('login'); setError(null); }}
+              >
+                ← Retour à la connexion
               </span>
             </span>
           ) : (
@@ -148,7 +183,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               <span>Pas encore de compte ?</span>{' '}
               <span
                 style={{ color: 'var(--accent-blue)', cursor: 'pointer', fontWeight: 600 }}
-                onClick={() => { setIsSignUp(true); setError(null); }}
+                onClick={() => { setAuthMode('signup'); setError(null); }}
               >
                 Créer un compte
               </span>

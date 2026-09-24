@@ -12,6 +12,7 @@ interface NavigationProps {
   onOpenAuth: () => void;
   role?: 'client' | 'admin' | null;
   isLoggedIn?: boolean;
+  onSignOut?: () => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
@@ -19,7 +20,8 @@ export const Navigation: React.FC<NavigationProps> = ({
   setMode,
   onOpenAuth,
   role,
-  isLoggedIn
+  isLoggedIn,
+  onSignOut
 }) => {
   return (
     <nav className="top-nav">
@@ -117,10 +119,16 @@ export const Navigation: React.FC<NavigationProps> = ({
                 background: '#10b981'
               }}
             />
-            <span style={{ fontWeight: 600 }}>Acme Global Store</span>
-            <span style={{ color: 'var(--text-dim)', fontSize: '0.725rem' }}>
-              (Growth Plan)
-            </span>
+            <span style={{ fontWeight: 600 }}>Connecté</span>
+            {onSignOut && (
+              <button 
+                onClick={onSignOut} 
+                className="btn btn-secondary btn-sm"
+                style={{ marginLeft: '0.5rem', padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+              >
+                Déconnexion
+              </button>
+            )}
           </div>
         )}
       </div>
