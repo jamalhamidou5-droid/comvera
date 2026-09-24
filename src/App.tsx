@@ -4,6 +4,7 @@ import { AppMode, ClientTab, AdminTab, UniversalProduct } from './types';
 import { MOCK_PRODUCTS } from './data/mockData';
 import { evaluateAllProducts } from './engine/complianceEngine';
 import { useAuth } from './context/AuthContext';
+import { supabase } from './lib/supabase';
 
 // Auth Components
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -61,9 +62,63 @@ export const App: React.FC = () => {
   const [adminTab, setAdminTab] = useState<AdminTab>('overview');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  // Products state (temporary mock until full supabase query hook is implemented)
-  const [products, setProducts] = useState<UniversalProduct[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<UniversalProduct[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<UniversalProduct | null>(null);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+
+  React.useEffect(() => {
+    const fetchProducts = async () => {
+      if (!user) {
+        setProducts(MOCK_PRODUCTS); // Pour la démo non connectée
+        setIsLoadingProducts(false);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const formattedProducts = data.map(item => ({
+            id: item.id,
+            sku: item.sku,
+            name: item.name,
+            description: item.description,
+            category: item.category,
+            subcategory: item.subcategory,
+            brand: item.brand,
+            manufacturer: item.manufacturer,
+            countryOfOrigin: item.country_of_origin,
+            ingredients: item.ingredients,
+            materials: item.materials,
+            weight: item.weight,
+            weightUnit: item.weight_unit,
+            packagingType: item.packaging_type,
+            targetMarkets: item.target_markets,
+            certifications: item.certifications,
+            languageLabels: item.language_labels,
+            hasLocalImporterRecord: item.has_local_importer_record,
+            hasProductRegistration: item.has_product_registration,
+            lastAnalyzedAt: item.last_analyzed_at,
+            syncedFrom: item.synced_from
+          }));
+          setProducts(formattedProducts as UniversalProduct[]);
+        } else {
+          setProducts([]);
+        }
+      } catch (err) {
+        console.error('Erreur Supabase:', err);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+  }, [user]);
 
   const reports = useMemo(() => evaluateAllProducts(products), [products]);
 
