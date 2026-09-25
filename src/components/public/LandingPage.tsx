@@ -363,7 +363,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
           {/* Free */}
           <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
@@ -371,7 +371,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>For individuals testing the engine</div>
             </div>
             <div style={{ fontSize: '2.5rem', fontWeight: 800 }}>
-              $0 <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ month</span>
+              0€ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
             </div>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--text-muted)', listStyle: 'none' }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 5 compliance checks / month</li>
@@ -386,23 +386,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* Starter */}
           <div className="glass-panel glass-glow" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', border: '1px solid var(--accent-blue)' }}>
-            <div style={{ position: 'absolute', top: '-12px', right: '1.5rem', background: 'var(--accent-blue)', color: '#fff', padding: '0.15rem 0.65rem', borderRadius: '999px', fontSize: '0.7rem', fontWeight: 700 }}>POPULAR</div>
+            <div style={{ position: 'absolute', top: '-12px', right: '1.5rem', background: 'var(--accent-blue)', color: '#fff', padding: '0.15rem 0.65rem', borderRadius: '999px', fontSize: '0.7rem', fontWeight: 700 }}>POPULAIRE</div>
             <div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>Starter</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>For small import/export businesses</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Petites entreprises</div>
             </div>
             <div style={{ fontSize: '2.5rem', fontWeight: 800 }}>
-              $19 <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ month</span>
+              19€ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
             </div>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--text-muted)', listStyle: 'none' }}>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 50 compliance checks / month</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Global sanctions & restricted parties</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Documented Evidence IDs</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Immutable audit logs</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Priority email support</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 50 analyses / mois</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Sanctions globales</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Evidence IDs</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Audit logs</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Support email</li>
             </ul>
             <button className="btn btn-primary" style={{ marginTop: 'auto' }} onClick={onOpenAuth}>
-              Upgrade to Starter
+              Choisir Starter
+            </button>
+          </div>
+
+          {/* Growth */}
+          <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>Growth</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Pour les équipes en croissance</div>
+            </div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 800 }}>
+              37€ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
+            </div>
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--text-muted)', listStyle: 'none' }}>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 150 analyses / mois</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Classification HS</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> API access</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 3 utilisateurs</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Support prioritaire</li>
+            </ul>
+            <button className="btn btn-secondary" style={{ marginTop: 'auto' }} onClick={onOpenAuth}>
+              Choisir Growth
             </button>
           </div>
 
@@ -410,20 +431,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>Business</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>For professional trade teams</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Professionnels du commerce</div>
             </div>
             <div style={{ fontSize: '2.5rem', fontWeight: 800 }}>
-              $49 <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ month</span>
+              59€ <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-muted)' }}>/ mois</span>
             </div>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem', color: 'var(--text-muted)', listStyle: 'none' }}>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 250 compliance checks / month</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Advanced product & HS Code checks</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Team Collaboration (5 users)</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> API access</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 24/7 dedicated support</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 500 analyses / mois</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Analyse complète IA</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Utilisateurs illimités</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Webhooks sur mesure</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Support dédié 24/7</li>
             </ul>
             <button className="btn btn-secondary" style={{ marginTop: 'auto' }} onClick={onOpenAuth}>
-              Upgrade to Business
+              Choisir Business
             </button>
           </div>
         </div>
