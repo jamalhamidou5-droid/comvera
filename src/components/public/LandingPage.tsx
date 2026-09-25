@@ -422,9 +422,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> 3 utilisateurs</li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Support prioritaire</li>
             </ul>
-            <button className="btn btn-secondary" style={{ marginTop: 'auto' }} onClick={onOpenAuth}>
+            <a href="https://buy.stripe.com/test_9B6cN5ck681S2R1abF5AQ01" target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ marginTop: 'auto', textDecoration: 'none' }}>
               Choisir Growth
-            </button>
+            </a>
           </div>
 
           {/* Business */}
