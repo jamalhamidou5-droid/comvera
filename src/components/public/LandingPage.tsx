@@ -401,9 +401,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Audit logs</li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="#3b82f6" /> Support email</li>
             </ul>
-            <button className="btn btn-primary" style={{ marginTop: 'auto' }} onClick={onOpenAuth}>
+            <a href="https://buy.stripe.com/test_aFaaEX5VI81S2R1dnR5AQ00" target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ marginTop: 'auto', textDecoration: 'none' }}>
               Choisir Starter
-            </button>
+            </a>
           </div>
 
           {/* Growth */}
