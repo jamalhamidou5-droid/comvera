@@ -16,7 +16,7 @@ import { LandingPage } from './components/public/LandingPage';
 import { AuthModal } from './components/public/AuthModal';
 import { OnboardingWizard } from './components/client/OnboardingWizard';
 import { DashboardOverview } from './components/client/DashboardOverview';
-import { CompanyScreening } from './components/client/CompanyScreening';
+import { NewComplianceCheck } from './components/client/NewComplianceCheck';
 import { ProductsCatalog } from './components/client/ProductsCatalog';
 import { ProductDetailModal } from './components/client/ProductDetailModal';
 import { MarketsHub } from './components/client/MarketsHub';
@@ -275,7 +275,7 @@ export const App: React.FC = () => {
                   />
                 )}
                 {clientTab === 'screening' && (
-                  <CompanyScreening />
+                  <NewComplianceCheck />
                 )}
                 {clientTab === 'products' && (
                   <ProductsCatalog
