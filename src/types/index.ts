@@ -2,6 +2,7 @@ export type AppMode = 'public' | 'onboarding' | 'client' | 'admin';
 
 export type ClientTab =
   | 'overview'
+  | 'screening'
   | 'products'
   | 'compliance'
   | 'markets'

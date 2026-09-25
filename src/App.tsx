@@ -16,6 +16,7 @@ import { LandingPage } from './components/public/LandingPage';
 import { AuthModal } from './components/public/AuthModal';
 import { OnboardingWizard } from './components/client/OnboardingWizard';
 import { DashboardOverview } from './components/client/DashboardOverview';
+import { CompanyScreening } from './components/client/CompanyScreening';
 import { ProductsCatalog } from './components/client/ProductsCatalog';
 import { ProductDetailModal } from './components/client/ProductDetailModal';
 import { MarketsHub } from './components/client/MarketsHub';
@@ -196,6 +197,14 @@ export const App: React.FC = () => {
                 </button>
 
                 <button
+                  className={`mode-btn ${clientTab === 'screening' ? 'active' : ''}`}
+                  style={{ borderRadius: '8px', padding: '0.65rem 0.85rem' }}
+                  onClick={() => setClientTab('screening')}
+                >
+                  <ShieldAlert size={18} /> Company Screening
+                </button>
+
+                <button
                   className={`mode-btn ${clientTab === 'products' ? 'active' : ''}`}
                   style={{ borderRadius: '8px', padding: '0.65rem 0.85rem' }}
                   onClick={() => setClientTab('products')}
@@ -264,6 +273,9 @@ export const App: React.FC = () => {
                       if (p) setSelectedProduct(p);
                     }}
                   />
+                )}
+                {clientTab === 'screening' && (
+                  <CompanyScreening />
                 )}
                 {clientTab === 'products' && (
                   <ProductsCatalog

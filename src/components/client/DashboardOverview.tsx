@@ -10,8 +10,14 @@ import {
   ArrowRight,
   ShieldAlert
 } from 'lucide-react';
-import { MOCK_MARKETS, MOCK_ALERTS } from '../../data/mockData';
+import { MOCK_ALERTS } from '../../data/mockData';
 import { ProductComplianceReport, ClientTab } from '../../types';
+
+const RECENT_CHECKS = [
+  { id: '1', company: 'ABC Ltd', country: 'Ghana', flag: '🇬🇭', risk: 'Low', status: 'Cleared' },
+  { id: '2', company: 'XYZ Corp', country: 'Turkey', flag: '🇹🇷', risk: 'Medium', status: 'Review' },
+  { id: '3', company: 'DEF Ltd', country: 'China', flag: '🇨🇳', risk: 'High', status: 'Blocked' },
+];
 
 interface DashboardOverviewProps {
   reports: Record<string, ProductComplianceReport>;
@@ -24,13 +30,12 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   setClientTab,
   onSelectProduct
 }) => {
-  const totalProducts = 1248; // Total items in store
-  const analyzedProducts = Object.values(reports);
-
-  // Compute breakdown stats
-  let compliantCount = 936;
-  let reviewCount = 184;
-  let nonCompliantCount = 128;
+  // KPI Stats
+  const totalProducts = 1284;
+  const reviewCount = 23;
+  const highRiskCount = 7;
+  const reportsGenerated = 156;
+  const countriesCount = 32;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -60,76 +65,88 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
         <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399', fontSize: '0.8rem', fontWeight: 500 }}>
-            <span>COMPLIANT</span>
+            <span>TRANSACTIONS CLEARED</span>
             <CheckCircle2 size={16} />
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399' }}>{compliantCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Prêts pour l'export immédiat</div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399' }}>{totalProducts.toLocaleString()}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Approuvées sans risque</div>
         </div>
 
         <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 500 }}>
-            <span>NEEDS REVIEW</span>
+            <span>UNDER REVIEW</span>
             <AlertTriangle size={16} />
           </div>
           <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fbbf24' }}>{reviewCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>184 exigences requièrent attention</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Vérification manuelle requise</div>
         </div>
 
         <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#f43f5e', fontSize: '0.8rem', fontWeight: 500 }}>
-            <span>NON-COMPLIANT</span>
+            <span>HIGH-RISK</span>
             <XCircle size={16} />
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#f43f5e' }}>{nonCompliantCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Bloqués pour dossier manquant</div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#f43f5e' }}>{highRiskCount}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Bloquées (Sanctions)</div>
+        </div>
+
+        <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--accent-blue)', fontSize: '0.8rem', fontWeight: 500 }}>
+            <span>REPORTS / COUNTRIES</span>
+            <Globe2 size={16} />
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-blue)' }}>{reportsGenerated}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Générés pour {countriesCount} pays</div>
         </div>
       </div>
 
       {/* Middle Grid: Market Breakdown + Recent Alerts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '1.5rem' }}>
-        {/* Compliance By Market */}
+        {/* Recent Checks Table */}
         <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Globe2 size={18} color="var(--accent-blue)" /> Compliance by Market
+              <ShieldAlert size={18} color="var(--accent-purple)" /> Recent Screenings
             </h3>
             <button
               className="btn btn-secondary btn-sm"
-              onClick={() => setClientTab('markets')}
+              onClick={() => setClientTab('screening')}
             >
-              Voir tous les marchés
+              New Screening
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {MOCK_MARKETS.map((market) => (
-              <div key={market.code} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                  <span style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '1.2rem' }}>{market.flag}</span> {market.name}
-                  </span>
-                  <span style={{ fontWeight: 700 }}>{market.readinessPercentage}%</span>
-                </div>
-                <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '999px', overflow: 'hidden' }}>
-                  <div
-                    style={{
-                      width: `${market.readinessPercentage}%`,
-                      height: '100%',
-                      background:
-                        market.readinessPercentage >= 90
-                          ? '#10b981'
-                          : market.readinessPercentage >= 75
-                          ? '#f59e0b'
-                          : '#f43f5e',
-                      borderRadius: '999px',
-                      transition: 'width 0.5s ease'
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)', textAlign: 'left' }}>
+                <th style={{ paddingBottom: '0.75rem', fontWeight: 500 }}>Company</th>
+                <th style={{ paddingBottom: '0.75rem', fontWeight: 500 }}>Country</th>
+                <th style={{ paddingBottom: '0.75rem', fontWeight: 500 }}>Risk</th>
+                <th style={{ paddingBottom: '0.75rem', fontWeight: 500, textAlign: 'right' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {RECENT_CHECKS.map((check) => (
+                <tr key={check.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <td style={{ padding: '0.85rem 0', fontWeight: 600 }}>{check.company}</td>
+                  <td style={{ padding: '0.85rem 0' }}><span style={{ marginRight: '0.4rem' }}>{check.flag}</span>{check.country}</td>
+                  <td style={{ padding: '0.85rem 0' }}>
+                    <span style={{ 
+                      color: check.risk === 'Low' ? '#34d399' : check.risk === 'Medium' ? '#fbbf24' : '#fb7185',
+                      background: check.risk === 'Low' ? 'rgba(16, 185, 129, 0.1)' : check.risk === 'Medium' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: 600
+                    }}>
+                      {check.risk === 'Low' ? '🟢 Low' : check.risk === 'Medium' ? '🟠 Medium' : '🔴 High'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '0.85rem 0', textAlign: 'right', color: 'var(--text-muted)' }}>{check.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Recent Alerts Feed */}
