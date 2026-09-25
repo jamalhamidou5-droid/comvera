@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldAlert, ArrowRight, ArrowLeft, Building, Globe2, Loader2, CheckCircle, AlertTriangle, FileText, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 type WizardStep = 'entity' | 'transaction' | 'product' | 'review' | 'result';
 
@@ -36,11 +38,40 @@ export const NewComplianceCheck: React.FC = () => {
           entity: 'Clear',
           product: 'Clear',
           docs: 'Missing'
+        },
+        evidence: {
+          rule: isHighRisk ? 'SANCTIONS_001' : 'COUNTRY_RISK_001',
+          reason: isHighRisk ? 'Potential match detected on OFAC list for the destination country/entity.' : 'No matches found on restricted lists.',
+          checkedAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
         }
       });
       setIsScanning(false);
       setStep('result');
     }, 2500);
+  };
+
+  const handleGeneratePdf = async () => {
+    const element = document.getElementById('pdf-report-content');
+    if (!element) return;
+    
+    try {
+      // Pour une meilleure qualité, surtout en mode sombre
+      const canvas = await html2canvas(element, { 
+        scale: 2,
+        backgroundColor: '#090d16' // background du site
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`Comvera_Report_${legalName.replace(/\s+/g, '_')}.pdf`);
+    } catch (err) {
+      console.error("Error generating PDF", err);
+    }
   };
 
   return (
@@ -181,6 +212,7 @@ export const NewComplianceCheck: React.FC = () => {
         {/* STEP 5: RESULT */}
         {step === 'result' && result && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', animation: 'fadeIn 0.5s' }}>
+            <div id="pdf-report-content" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '1rem' }}>
             <div style={{ textAlign: 'center' }}>
               <h2 style={{ fontSize: '2rem', fontWeight: 800, color: result.riskLevel === 'LOW' ? '#10b981' : '#f43f5e' }}>
                 {result.riskLevel === 'LOW' ? '🟢 CLEAR TO PROCEED' : '🟠 REVIEW REQUIRED'}
@@ -219,9 +251,25 @@ export const NewComplianceCheck: React.FC = () => {
               </div>
             )}
 
+            <div style={{ padding: '1.5rem', border: '1px solid var(--border-subtle)', borderRadius: '8px', background: 'rgba(255,255,255,0.01)' }}>
+              <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>Evidence</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '0.5rem', fontSize: '0.85rem' }}>
+                <div style={{ color: 'var(--text-dim)' }}>Rule:</div>
+                <div style={{ fontWeight: 600 }}>{result.evidence.rule}</div>
+                <div style={{ color: 'var(--text-dim)' }}>Reason:</div>
+                <div style={{ fontWeight: 600 }}>{result.evidence.reason}</div>
+                <div style={{ color: 'var(--text-dim)' }}>Checked:</div>
+                <div style={{ fontWeight: 600 }}>{result.evidence.checkedAt}</div>
+                <div style={{ color: 'var(--text-dim)' }}>Engine:</div>
+                <div style={{ fontWeight: 600 }}>Comvera Compliance Engine</div>
+              </div>
+            </div>
+            
+            </div>{/* Fin de la div englobante pour le PDF */}
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
               <button className="btn btn-secondary" style={{ padding: '1rem' }} onClick={() => setStep('entity')}>Start New Check</button>
-              <button className="btn btn-primary" style={{ padding: '1rem' }}><Download size={18} style={{ marginRight: '0.5rem' }}/> Generate PDF Report</button>
+              <button className="btn btn-primary" style={{ padding: '1rem' }} onClick={handleGeneratePdf}><Download size={18} style={{ marginRight: '0.5rem' }}/> Generate PDF Report</button>
             </div>
           </div>
         )}

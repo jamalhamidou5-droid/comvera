@@ -65,11 +65,14 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
         <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#34d399', fontSize: '0.8rem', fontWeight: 500 }}>
-            <span>TRANSACTIONS CLEARED</span>
+            <span>CHECKS USED THIS MONTH</span>
             <CheckCircle2 size={16} />
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399' }}>{totalProducts.toLocaleString()}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Approuvées sans risque</div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399' }}>7 <span style={{fontSize: '1rem', color: 'var(--text-dim)'}}>/ 10</span></div>
+          <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '999px', overflow: 'hidden' }}>
+            <div style={{ width: '70%', height: '100%', background: '#34d399' }} />
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Free Plan - Upgrade to unlock more</div>
         </div>
 
         <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
