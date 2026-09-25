@@ -202,7 +202,7 @@ export const NewComplianceCheck: React.FC = () => {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
               <button className="btn btn-secondary" onClick={() => setStep('product')} disabled={isScanning}><ArrowLeft size={16} /> Back</button>
-              <button className="btn btn-primary" onClick={handleRunCheck} disabled={isScanning} style={{ padding: '0.75rem 2rem' }}>
+              <button className="btn btn-primary btn-pulse" onClick={handleRunCheck} disabled={isScanning} style={{ padding: '0.75rem 2rem' }}>
                 {isScanning ? <><Loader2 size={18} className="animate-spin" /> Analyzing...</> : 'RUN COMPLIANCE CHECK'}
               </button>
             </div>
