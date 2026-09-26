@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Package,
   CheckCircle2,
@@ -8,16 +8,13 @@ import {
   Globe2,
   Bell,
   ArrowRight,
-  ShieldAlert
+  ShieldAlert,
+  Loader2
 } from 'lucide-react';
 import { MOCK_ALERTS } from '../../data/mockData';
 import { ProductComplianceReport, ClientTab } from '../../types';
-
-const RECENT_CHECKS = [
-  { id: '1', company: 'ABC Ltd', country: 'Ghana', flag: '🇬🇭', risk: 'Low', status: 'Cleared' },
-  { id: '2', company: 'XYZ Corp', country: 'Turkey', flag: '🇹🇷', risk: 'Medium', status: 'Review' },
-  { id: '3', company: 'DEF Ltd', country: 'China', flag: '🇨🇳', risk: 'High', status: 'Blocked' },
-];
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 interface DashboardOverviewProps {
   reports: Record<string, ProductComplianceReport>;
@@ -30,19 +27,74 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   setClientTab,
   onSelectProduct
 }) => {
-  // KPI Stats
-  const totalProducts = 1284;
-  const reviewCount = 23;
-  const highRiskCount = 7;
-  const reportsGenerated = 156;
-  const countriesCount = 32;
+  const { organizationId } = useAuth();
+  
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    reviewCount: 0,
+    highRiskCount: 0,
+    reportsGenerated: 0
+  });
+  const [recentChecks, setRecentChecks] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!organizationId) return;
+
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        // 1. Fetch total products
+        const { count: prodCount } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .eq('organization_id', organizationId);
+
+        // 2. Fetch compliance checks for stats
+        const { data: checks } = await supabase
+          .from('compliance_checks')
+          .select('*, products(name)')
+          .eq('organization_id', organizationId)
+          .order('created_at', { ascending: false });
+
+        if (checks) {
+          const review = checks.filter(c => c.risk_level === 'MEDIUM').length;
+          const highRisk = checks.filter(c => c.risk_level === 'HIGH' || c.risk_level === 'CRITICAL').length;
+          
+          setStats({
+            totalProducts: prodCount || 0,
+            reviewCount: review,
+            highRiskCount: highRisk,
+            reportsGenerated: checks.length
+          });
+
+          // Take top 5 for recent screenings table
+          const formattedChecks = checks.slice(0, 5).map(c => ({
+            id: c.id,
+            company: c.products?.name || 'Unknown Product',
+            country: 'Global', // You could extract from results
+            flag: '🌐',
+            risk: c.risk_level === 'LOW' ? 'Low' : c.risk_level === 'MEDIUM' ? 'Medium' : 'High',
+            status: c.decision
+          }));
+          setRecentChecks(formattedChecks);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [organizationId]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Welcome Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Good morning, Acme Store</h1>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Good morning</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
             Aperçu de la conformité réglementaire mondiale de votre catalogue.
           </p>
@@ -59,8 +111,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <span>TOTAL PRODUCTS</span>
             <Package size={16} color="var(--accent-blue)" />
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800 }}>{totalProducts.toLocaleString()}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Synchronisés via Shopify</div>
+          <div style={{ fontSize: '2rem', fontWeight: 800 }}>
+            {loading ? <Loader2 size={24} className="animate-spin" /> : stats.totalProducts}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Enregistrés dans votre base</div>
         </div>
 
         <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -68,11 +122,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <span>CHECKS USED THIS MONTH</span>
             <CheckCircle2 size={16} />
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399' }}>7 <span style={{fontSize: '1rem', color: 'var(--text-dim)'}}>/ 10</span></div>
-          <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '999px', overflow: 'hidden' }}>
-            <div style={{ width: '70%', height: '100%', background: '#34d399' }} />
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399' }}>
+            {loading ? <Loader2 size={24} className="animate-spin" /> : stats.reportsGenerated}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Free Plan - Upgrade to unlock more</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Analyses réglementaires effectuées</div>
         </div>
 
         <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -80,7 +133,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <span>UNDER REVIEW</span>
             <AlertTriangle size={16} />
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fbbf24' }}>{reviewCount}</div>
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#fbbf24' }}>
+            {loading ? <Loader2 size={24} className="animate-spin" /> : stats.reviewCount}
+          </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Vérification manuelle requise</div>
         </div>
 
@@ -89,17 +144,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <span>HIGH-RISK</span>
             <XCircle size={16} />
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#f43f5e' }}>{highRiskCount}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Bloquées (Sanctions)</div>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--accent-blue)', fontSize: '0.8rem', fontWeight: 500 }}>
-            <span>REPORTS / COUNTRIES</span>
-            <Globe2 size={16} />
+          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#f43f5e' }}>
+            {loading ? <Loader2 size={24} className="animate-spin" /> : stats.highRiskCount}
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-blue)' }}>{reportsGenerated}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Générés pour {countriesCount} pays</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Bloquées ou non conformes</div>
         </div>
       </div>
 
@@ -122,14 +170,19 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-dim)', textAlign: 'left' }}>
-                <th style={{ paddingBottom: '0.75rem', fontWeight: 500 }}>Company</th>
-                <th style={{ paddingBottom: '0.75rem', fontWeight: 500 }}>Country</th>
+                <th style={{ paddingBottom: '0.75rem', fontWeight: 500 }}>Product / Entity</th>
+                <th style={{ paddingBottom: '0.75rem', fontWeight: 500 }}>Market</th>
                 <th style={{ paddingBottom: '0.75rem', fontWeight: 500 }}>Risk</th>
                 <th style={{ paddingBottom: '0.75rem', fontWeight: 500, textAlign: 'right' }}>Status</th>
               </tr>
             </thead>
             <tbody>
-              {RECENT_CHECKS.map((check) => (
+              {recentChecks.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)' }}>No screenings yet.</td>
+                </tr>
+              )}
+              {recentChecks.map((check) => (
                 <tr key={check.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td style={{ padding: '0.85rem 0', fontWeight: 600 }}>{check.company}</td>
                   <td style={{ padding: '0.85rem 0' }}><span style={{ marginRight: '0.4rem' }}>{check.flag}</span>{check.country}</td>
