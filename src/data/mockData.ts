@@ -68,6 +68,66 @@ export const MOCK_MARKETS: Market[] = [
     readinessPercentage: 96,
     description: 'EU Cosmetic Regulation (EC) 1223/2009, CPNP Portal Registration',
     currency: 'EUR'
+  },
+  {
+    code: 'AE',
+    name: 'United Arab Emirates',
+    flag: '🇦🇪',
+    region: 'Middle East',
+    activeRulesCount: 21,
+    readinessPercentage: 75,
+    description: 'ESMA Standards, Halal Certification Requirements',
+    currency: 'AED'
+  },
+  {
+    code: 'SA',
+    name: 'Saudi Arabia',
+    flag: '🇸🇦',
+    region: 'Middle East',
+    activeRulesCount: 25,
+    readinessPercentage: 70,
+    description: 'SFDA Cosmetic Notification, SABER Electronic Platform',
+    currency: 'SAR'
+  },
+  {
+    code: 'CM',
+    name: 'Cameroon',
+    flag: '🇨🇲',
+    region: 'Africa',
+    activeRulesCount: 15,
+    readinessPercentage: 50,
+    description: 'ANOR Standards, Certificate of Conformity (CoC), Pre-Export Verification',
+    currency: 'XAF'
+  },
+  {
+    code: 'ZA',
+    name: 'South Africa',
+    flag: '🇿🇦',
+    region: 'Africa',
+    activeRulesCount: 28,
+    readinessPercentage: 80,
+    description: 'SABS Standards, National Regulator for Compulsory Specifications (NRCS)',
+    currency: 'ZAR'
+  },
+  {
+    code: 'GB',
+    name: 'United Kingdom',
+    flag: '🇬🇧',
+    region: 'Europe',
+    activeRulesCount: 58,
+    readinessPercentage: 92,
+    description: 'UK REACH, Submit Cosmetic Product Notifications (SCPN)',
+    currency: 'GBP'
+  },
+  {
+    code: 'IN',
+    name: 'India',
+    flag: '🇮🇳',
+    region: 'Asia Pacific',
+    activeRulesCount: 35,
+    readinessPercentage: 65,
+    description: 'CDSCO Registration, BIS Certification, Legal Metrology Rules',
+    currency: 'INR'
   }
 ];
 
