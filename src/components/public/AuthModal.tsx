@@ -28,6 +28,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              company_name: company || 'Mon Entreprise',
+              full_name: email.split('@')[0]
+            }
+          }
         });
         if (signUpError) throw signUpError;
         

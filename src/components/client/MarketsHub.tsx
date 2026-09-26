@@ -1,11 +1,32 @@
-import React, { useState } from 'react';
-import { Globe2, CheckCircle2, AlertTriangle, XCircle, ChevronRight, BookOpen, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Globe2, CheckCircle2, AlertTriangle, XCircle, ChevronRight, BookOpen, ShieldCheck, Loader2 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 import { MOCK_MARKETS } from '../../data/mockData';
 
 export const MarketsHub: React.FC = () => {
+  const [markets, setMarkets] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedMarketCode, setSelectedMarketCode] = useState<string>('JP');
 
-  const activeMarket = MOCK_MARKETS.find((m) => m.code === selectedMarketCode) || MOCK_MARKETS[0];
+  useEffect(() => {
+    const fetchMarkets = async () => {
+      const { data } = await supabase.from('markets').select('*');
+      if (data && data.length > 0) {
+        // Merge DB markets with Mock metadata (flags, readiness) for UI
+        const merged = data.map(dbM => {
+          const mockData = MOCK_MARKETS.find(m => m.code === dbM.code) || {};
+          return { ...mockData, ...dbM };
+        });
+        setMarkets(merged);
+      } else {
+        setMarkets(MOCK_MARKETS);
+      }
+      setLoading(false);
+    };
+    fetchMarkets();
+  }, []);
+
+  const activeMarket = markets.find((m) => m.code === selectedMarketCode) || markets[0] || {};
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -17,8 +38,9 @@ export const MarketsHub: React.FC = () => {
       </div>
 
       {/* Market Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
-        {MOCK_MARKETS.map((m) => {
+      {loading ? <Loader2 size={24} className="animate-spin" style={{ margin: '2rem auto' }} /> : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+          {markets.map((m) => {
           const isSelected = selectedMarketCode === m.code;
           return (
             <div
@@ -59,7 +81,8 @@ export const MarketsHub: React.FC = () => {
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
 
       {/* Active Market Requirements Breakdown */}
       <div className="glass-panel" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

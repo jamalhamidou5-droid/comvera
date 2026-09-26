@@ -1,15 +1,42 @@
-import React, { useState } from 'react';
-import { FileText, Download, Printer, Plus, CheckCircle2, Eye, FileCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Download, Printer, Plus, CheckCircle2, Eye, FileCheck, Loader2 } from 'lucide-react';
 import { ComplianceDocument, UniversalProduct } from '../../types';
-import { MOCK_DOCUMENTS } from '../../data/mockData';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 interface DocumentGeneratorProps {
   products: UniversalProduct[];
 }
 
 export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({ products }) => {
-  const [documents, setDocuments] = useState<ComplianceDocument[]>(MOCK_DOCUMENTS);
-  const [activePreviewDoc, setActivePreviewDoc] = useState<ComplianceDocument | null>(MOCK_DOCUMENTS[0]);
+  const { organizationId } = useAuth();
+  const [documents, setDocuments] = useState<ComplianceDocument[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
+  const [activePreviewDoc, setActivePreviewDoc] = useState<ComplianceDocument | null>(null);
+
+  useEffect(() => {
+    if (!organizationId) return;
+    const fetchDocs = async () => {
+      const { data } = await supabase.from('compliance_documents').select('*').eq('organization_id', organizationId).order('created_at', { ascending: false });
+      if (data) {
+        const formatted = data.map(d => ({
+          id: d.id,
+          documentType: d.document_type as any,
+          title: d.title,
+          countryCode: d.country_code,
+          productId: d.product_id,
+          productName: products.find(p => p.id === d.product_id)?.name || 'Unknown',
+          status: d.status,
+          generatedAt: d.created_at,
+          contentMarkdown: d.content_markdown
+        }));
+        setDocuments(formatted);
+        if (formatted.length > 0) setActivePreviewDoc(formatted[0]);
+      }
+      setLoadingDocs(false);
+    };
+    fetchDocs();
+  }, [organizationId, products]);
 
   // Generator Modal State
   const [showModal, setShowModal] = useState(false);
@@ -17,20 +44,17 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({ products }
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [selectedProductId, setSelectedProductId] = useState(products[0]?.id || 'prod-001');
 
-  const handleGenerateDoc = (e: React.FormEvent) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerateDoc = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!organizationId) return;
+    setIsGenerating(true);
+    
     const prod = products.find((p) => p.id === selectedProductId) || products[0];
 
-    const newDoc: ComplianceDocument = {
-      id: `doc-${Date.now()}`,
-      documentType: selectedDocType,
-      title: `${selectedDocType === 'japanese_label_dossier' ? 'Japanese Label Specs' : selectedDocType === 'anvisa_import_dossier' ? 'ANVISA Import Dossier' : 'Compliance Declaration'} — ${prod.name}`,
-      countryCode: selectedCountry,
-      productId: prod.id,
-      productName: prod.name,
-      status: 'Ready',
-      generatedAt: new Date().toISOString(),
-      contentMarkdown: `# OFFICIAL COMPLIANCE DECLARATION FOR CUSTOMS
+    const docTitle = `${selectedDocType === 'japanese_label_dossier' ? 'Japanese Label Specs' : selectedDocType === 'anvisa_import_dossier' ? 'ANVISA Import Dossier' : 'Compliance Declaration'} — ${prod.name}`;
+    const mdContent = `# OFFICIAL COMPLIANCE DECLARATION FOR CUSTOMS
 **Product:** ${prod.name}  
 **SKU:** ${prod.sku}  
 **Country of Origin:** ${prod.countryOfOrigin}  
@@ -42,18 +66,44 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = ({ products }
 - **Brand:** ${prod.brand}
 - **Manufacturer:** ${prod.manufacturer}
 - **Category:** ${prod.category} (${prod.subcategory})
-- **Ingredients:** ${prod.ingredients.join(', ')}
+- **Ingredients:** ${prod.ingredients?.join(', ') || 'N/A'}
 - **Net Quantity:** ${prod.weight} ${prod.weightUnit}
 
 ### 2. Legal Statement
 This product has been checked against the Comvera Regulatory Knowledge Base for ${selectedCountry}. All required safety disclosures, manufacturer records, and localized labeling templates have been verified.
 
 *Certified by Comvera Engine v2.4 on ${new Date().toLocaleDateString()}*
-`
-    };
+`;
 
-    setDocuments([newDoc, ...documents]);
-    setActivePreviewDoc(newDoc);
+    const { data: insertedDoc, error } = await supabase.from('compliance_documents').insert([{
+      organization_id: organizationId,
+      product_id: prod.id,
+      document_type: selectedDocType,
+      title: docTitle,
+      country_code: selectedCountry,
+      status: 'Ready',
+      content_markdown: mdContent
+    }]).select().single();
+
+    if (insertedDoc && !error) {
+      const newDoc: ComplianceDocument = {
+        id: insertedDoc.id,
+        documentType: insertedDoc.document_type as any,
+        title: insertedDoc.title,
+        countryCode: insertedDoc.country_code,
+        productId: insertedDoc.product_id,
+        productName: prod.name,
+        status: insertedDoc.status as any,
+        generatedAt: insertedDoc.created_at,
+        contentMarkdown: insertedDoc.content_markdown
+      };
+      setDocuments([newDoc, ...documents]);
+      setActivePreviewDoc(newDoc);
+    } else {
+      console.error(error);
+    }
+    
+    setIsGenerating(false);
     setShowModal(false);
   };
 

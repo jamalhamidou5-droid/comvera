@@ -1,13 +1,24 @@
-import React from 'react';
-import { BellRing, ShieldAlert, CheckCircle2, ArrowRight } from 'lucide-react';
-import { MOCK_ALERTS } from '../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { BellRing, ShieldAlert, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
 import { ClientTab } from '../../types';
+import { supabase } from '../../lib/supabase';
 
 interface AlertsViewProps {
   setClientTab: (tab: ClientTab) => void;
 }
 
 export const AlertsView: React.FC<AlertsViewProps> = ({ setClientTab }) => {
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      const { data } = await supabase.from('regulatory_alerts').select('*').order('created_at', { ascending: false });
+      if (data) setAlerts(data);
+      setLoading(false);
+    };
+    fetchAlerts();
+  }, []);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div>
@@ -18,7 +29,8 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ setClientTab }) => {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {MOCK_ALERTS.map((alert) => (
+        {loading ? <Loader2 size={24} className="animate-spin" style={{ margin: '2rem auto' }} /> : null}
+        {alerts.map((alert) => (
           <div
             key={alert.id}
             className="glass-panel"
@@ -32,13 +44,13 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ setClientTab }) => {
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ fontSize: '1.4rem' }}>{alert.countryFlag}</span>
+                <span style={{ fontSize: '1.4rem' }}>{alert.country_flag}</span>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{alert.title}</h3>
                 <span className="badge badge-action">{alert.severity} priority</span>
               </div>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{alert.description}</p>
               <div style={{ fontSize: '0.775rem', color: 'var(--text-dim)', marginTop: '0.2rem' }}>
-                Category: <strong>{alert.category}</strong> • Date: {alert.date}
+                Category: <strong>{alert.category}</strong> • Date: {new Date(alert.created_at).toLocaleDateString()}
               </div>
             </div>
 
@@ -46,7 +58,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ setClientTab }) => {
               className="btn btn-primary btn-sm"
               onClick={() => setClientTab('products')}
             >
-              Review Affected Products ({alert.affectedProductsCount}) <ArrowRight size={14} />
+              Review Affected Products ({alert.affected_products_count}) <ArrowRight size={14} />
             </button>
           </div>
         ))}

@@ -7,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   role: 'client' | 'admin' | null;
+  organizationId: string | null;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   role: null,
+  organizationId: null,
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -21,12 +23,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<'client' | 'admin' | null>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   useEffect(() => {
     // Bypass pour le mode développement (Mock)
     if (import.meta.env.VITE_SUPABASE_URL.includes('mock-project-id')) {
       setUser({ id: 'mock-user-123', email: 'test@comvera.com' } as User);
       setRole('client'); // Mettre 'admin' pour tester l'admin
+      setOrganizationId('mock-org-123');
       setLoading(false);
       return;
     }
@@ -35,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchUserRole(session.user.id);
+      if (session?.user) fetchUserDetails(session.user.id);
       else {
         setLoading(false);
       }
@@ -45,9 +49,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchUserRole(session.user.id);
+      if (session?.user) fetchUserDetails(session.user.id);
       else {
         setRole(null);
+        setOrganizationId(null);
         setLoading(false);
       }
     });
@@ -55,29 +60,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserDetails = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // 1. Fetch Global Admin status
+      const { data: profile } = await supabase
         .from('user_profiles')
-        .select('role')
+        .select('is_global_admin')
         .eq('id', userId)
         .single();
         
-      if (data && !error) {
-        setRole(data.role as 'client' | 'admin');
+      if (profile?.is_global_admin) {
+        setRole('admin');
       } else {
-        // Default role for new signups
-        setRole('client'); 
+        setRole('client');
       }
+
+      // 2. Fetch Organization
+      const { data: orgMember } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', userId)
+        .limit(1)
+        .single();
+
+      if (orgMember) {
+        setOrganizationId(orgMember.organization_id);
+      } else {
+        setOrganizationId(null);
+      }
+
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching user details:', err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, role }}>
+    <AuthContext.Provider value={{ user, session, loading, role, organizationId }}>
       {children}
     </AuthContext.Provider>
   );
