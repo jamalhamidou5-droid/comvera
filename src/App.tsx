@@ -50,7 +50,7 @@ import {
 export const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, role } = useAuth();
+  const { user, role, organizationId } = useAuth();
   
   // State for Navigation / Layout
   // We deduce "mode" for Navigation component based on current route
@@ -119,17 +119,93 @@ export const App: React.FC = () => {
     };
 
     fetchProducts();
-  }, [user]);
+  }, [user, organizationId]);
 
-  const reports = useMemo(() => evaluateAllProducts(products), [products]);
+  const [reports, setReports] = useState<Record<string, ProductComplianceReport>>({});
 
-  const handleUpdateProduct = (updated: UniversalProduct) => {
+  React.useEffect(() => {
+    if (products.length > 0 && organizationId) {
+      evaluateAllProducts(products, organizationId).then(res => setReports(res));
+    } else {
+      setReports({});
+    }
+  }, [products, organizationId]);
+
+  const handleUpdateProduct = async (updated: UniversalProduct) => {
+    // Optimistic update
     setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
     setSelectedProduct(updated);
+
+    if (user && organizationId) {
+      try {
+        await supabase.from('products').update({
+          sku: updated.sku,
+          name: updated.name,
+          description: updated.description,
+          category: updated.category,
+          subcategory: updated.subcategory,
+          brand: updated.brand,
+          manufacturer: updated.manufacturer,
+          country_of_origin: updated.countryOfOrigin,
+          ingredients: updated.ingredients,
+          materials: updated.materials,
+          weight: updated.weight,
+          weight_unit: updated.weightUnit,
+          packaging_type: updated.packagingType,
+          target_markets: updated.targetMarkets,
+          certifications: updated.certifications,
+          language_labels: updated.languageLabels,
+          has_local_importer_record: updated.hasLocalImporterRecord,
+          has_product_registration: updated.hasProductRegistration,
+          synced_from: updated.syncedFrom
+        }).eq('id', updated.id);
+      } catch (err) {
+        console.error('Update failed', err);
+      }
+    }
   };
 
-  const handleAddProduct = (newProduct: UniversalProduct) => {
-    setProducts((prev) => [newProduct, ...prev]);
+  const handleAddProduct = async (newProduct: UniversalProduct) => {
+    if (!user || !organizationId) {
+      // Offline/demo mode
+      setProducts((prev) => [newProduct, ...prev]);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.from('products').insert([{
+        organization_id: organizationId,
+        created_by: user.id,
+        sku: newProduct.sku,
+        name: newProduct.name,
+        description: newProduct.description,
+        category: newProduct.category,
+        subcategory: newProduct.subcategory,
+        brand: newProduct.brand,
+        manufacturer: newProduct.manufacturer,
+        country_of_origin: newProduct.countryOfOrigin,
+        ingredients: newProduct.ingredients,
+        materials: newProduct.materials,
+        weight: newProduct.weight,
+        weight_unit: newProduct.weightUnit,
+        packaging_type: newProduct.packagingType,
+        target_markets: newProduct.targetMarkets,
+        certifications: newProduct.certifications,
+        language_labels: newProduct.languageLabels,
+        has_local_importer_record: newProduct.hasLocalImporterRecord,
+        has_product_registration: newProduct.hasProductRegistration,
+        synced_from: newProduct.syncedFrom
+      }]).select().single();
+
+      if (error) throw error;
+      
+      if (data) {
+        const addedProduct: UniversalProduct = { ...newProduct, id: data.id };
+        setProducts((prev) => [addedProduct, ...prev]);
+      }
+    } catch (err) {
+      console.error('Insert failed', err);
+    }
   };
 
   return (

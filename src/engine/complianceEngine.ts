@@ -5,27 +5,94 @@ import {
   ProductComplianceReport,
   ComplianceStatus
 } from '../types';
-import { MOCK_RULES, MOCK_MARKETS } from '../data/mockData';
+import { supabase } from '../lib/supabase';
+import { MOCK_MARKETS } from '../data/mockData';
 
-export function evaluateProductCompliance(
+// Registre des fonctions d'évaluation (la logique métier reste dans le code)
+const evaluatorRegistry: Record<string, (product: UniversalProduct) => { passed: boolean; issueDetails?: string; actionRequired?: string; missingField?: string }> = {
+  'EU-ING-001': (product) => {
+    const banned = ['Lilial', 'Lyral', 'PFAS'];
+    const found = product.ingredients.filter(i => banned.includes(i));
+    if (found.length > 0) return { passed: false, issueDetails: `Contains banned ingredients: ${found.join(', ')}`, actionRequired: 'Reformulate product to remove banned substances.' };
+    return { passed: true };
+  },
+  'US-FDA-001': (product) => {
+    if (!product.hasProductRegistration?.US) return { passed: false, missingField: 'hasProductRegistration.US', issueDetails: 'No FDA MoCRA registration on file.', actionRequired: 'Register product facility and listing via FDA Cosmetics Direct.' };
+    return { passed: true };
+  },
+  'US-COL-001': (product) => {
+    const hasColorants = product.ingredients.some(i => i.toLowerCase().includes('ci ') || i.toLowerCase().includes('lake'));
+    if (hasColorants && !product.certifications.includes('FDA Batch Certified Colorants')) return { passed: false, issueDetails: 'Contains colorants without FDA batch certification record.', actionRequired: 'Ensure all color additives are FDA batch-certified.' };
+    return { passed: true };
+  },
+  'JP-MHLW-001': (product) => {
+    if (!product.hasLocalImporterRecord?.JP) return { passed: false, missingField: 'hasLocalImporterRecord.JP', issueDetails: 'No Marketing Authorization Holder (MAH) recorded for Japan.', actionRequired: 'Appoint a Japanese MAH and submit import notification.' };
+    return { passed: true };
+  },
+  'JP-LBL-001': (product) => {
+    if (!product.languageLabels?.ja) return { passed: false, missingField: 'languageLabels.ja', issueDetails: 'Japanese language label missing.', actionRequired: 'Create compliant Japanese label with MAH details.' };
+    return { passed: true };
+  },
+  'BR-ANVISA-001': (product) => {
+    if (!product.hasProductRegistration?.BR) return { passed: false, missingField: 'hasProductRegistration.BR', issueDetails: 'ANVISA registration/notification missing.', actionRequired: 'Submit product notification to ANVISA via local representative.' };
+    return { passed: true };
+  },
+  'UAE-MOIAT-001': (product) => {
+    if (!product.certifications.includes('ECAS')) return { passed: false, issueDetails: 'ECAS certification not found on product record.', actionRequired: 'Obtain ECAS certification for cosmetics from MoIAT.' };
+    return { passed: true };
+  },
+  'SA-SFDA-001': (product) => {
+    if (!product.hasProductRegistration?.SA) return { passed: false, issueDetails: 'Not registered in eCosma.', actionRequired: 'Register product in SFDA eCosma system.' };
+    return { passed: true };
+  },
+  'ZA-NRCS-001': (product) => {
+    if (!product.hasProductRegistration?.ZA) return { passed: false, issueDetails: 'NRCS Homologation missing.', actionRequired: 'Apply for NRCS homologation.' };
+    return { passed: true };
+  },
+  'CM-ANOR-001': (product) => {
+    if (!product.certifications.includes('ANOR')) return { passed: false, issueDetails: 'ANOR certificate missing.', actionRequired: 'Obtain Certificate of Conformity from ANOR.' };
+    return { passed: true };
+  },
+  'GB-OPSS-001': (product) => {
+    if (!product.hasProductRegistration?.GB) return { passed: false, issueDetails: 'SCPN notification missing.', actionRequired: 'Submit notification to UK Submit Cosmetic Product Notification portal.' };
+    return { passed: true };
+  },
+  'IN-CDSCO-001': (product) => {
+    if (!product.hasProductRegistration?.IN) return { passed: false, issueDetails: 'CDSCO registration missing.', actionRequired: 'Apply for cosmetics import registration with CDSCO.' };
+    return { passed: true };
+  }
+};
+
+export async function evaluateProductCompliance(
   product: UniversalProduct,
-  customRules: Rule[] = MOCK_RULES
-): ProductComplianceReport {
+  organizationId: string
+): Promise<ProductComplianceReport> {
   const marketSummaries: Record<string, MarketComplianceSummary> = {};
   let overallBlocking = 0;
   let overallWarning = 0;
 
-  product.targetMarkets.forEach((marketCode) => {
-    const marketInfo = MOCK_MARKETS.find((m) => m.code === marketCode) || {
+  // 1. Fetch active rules from Supabase
+  const { data: dbRules, error } = await supabase
+    .from('rules')
+    .select('*')
+    .eq('status', 'active');
+
+  const activeRules = dbRules || [];
+
+  // 2. Fetch markets from Supabase (or fallback to MOCK)
+  const { data: dbMarkets } = await supabase.from('markets').select('*');
+  const availableMarkets = dbMarkets && dbMarkets.length > 0 ? dbMarkets : MOCK_MARKETS;
+
+  for (const marketCode of product.targetMarkets) {
+    const marketInfo = availableMarkets.find((m: any) => m.code === marketCode) || {
       name: marketCode,
       flag: '🌐'
     };
 
-    // Filter rules applicable to this market & product category (or general)
-    const applicableRules = customRules.filter(
+    // Filter rules applicable to this market & product category
+    const applicableRules = activeRules.filter(
       (r) =>
-        r.status === 'active' &&
-        r.countryCode === marketCode &&
+        r.country_code === marketCode &&
         (r.category === product.category || r.category === 'All')
     );
 
@@ -34,7 +101,10 @@ export function evaluateProductCompliance(
     let blockingCount = 0;
 
     const evaluations = applicableRules.map((rule) => {
-      const result = rule.evaluator(product);
+      // Find evaluator logic from registry, fallback to always pass if not defined
+      const evaluator = evaluatorRegistry[rule.id] || (() => ({ passed: true }));
+      const result = evaluator(product);
+      
       if (result.passed) {
         passedCount++;
       } else {
@@ -50,11 +120,10 @@ export function evaluateProductCompliance(
       return {
         ruleId: rule.id,
         ruleTitle: rule.title,
-        version: rule.version,
         severity: rule.severity,
         passed: result.passed,
-        legalReference: rule.legalReference,
-        sourceUrl: rule.sourceUrl,
+        legalReference: rule.legal_reference,
+        sourceUrl: rule.source_url,
         issueDetails: result.issueDetails,
         actionRequired: result.actionRequired,
         missingField: result.missingField
@@ -62,7 +131,6 @@ export function evaluateProductCompliance(
     });
 
     const total = applicableRules.length;
-    // Calculate score
     const score = total > 0 ? Math.round((passedCount / total) * 100) : 100;
 
     let status: ComplianceStatus = 'READY';
@@ -83,13 +151,54 @@ export function evaluateProductCompliance(
       blockingCount,
       evaluations
     };
-  });
+  }
 
   let overallStatus: ComplianceStatus = 'READY';
   if (overallBlocking > 0) {
     overallStatus = 'BLOCKED';
   } else if (overallWarning > 0) {
     overallStatus = 'ACTION_REQUIRED';
+  }
+
+  // 3. Save report to Supabase (compliance_checks and check_results)
+  try {
+    // Upsert or Insert compliance_check
+    const { data: checkData, error: checkError } = await supabase
+      .from('compliance_checks')
+      .insert([{
+        organization_id: organizationId,
+        product_id: product.id,
+        status: 'COMPLETED',
+        risk_score: 100 - (overallBlocking * 20 + overallWarning * 10), // Example formula
+        risk_level: overallStatus === 'BLOCKED' ? 'HIGH' : overallStatus === 'ACTION_REQUIRED' ? 'MEDIUM' : 'LOW',
+        decision: overallStatus === 'READY' ? 'APPROVED' : 'REVIEW'
+      }])
+      .select()
+      .single();
+
+    if (checkData && !checkError) {
+      // Insert check results
+      const resultsToInsert = [];
+      for (const market of Object.values(marketSummaries)) {
+        for (const evalResult of market.evaluations) {
+          resultsToInsert.push({
+            check_id: checkData.id,
+            rule_id: evalResult.ruleId,
+            rule_title: evalResult.ruleTitle,
+            severity: evalResult.severity,
+            passed: evalResult.passed,
+            issue_details: evalResult.issueDetails,
+            action_required: evalResult.actionRequired
+          });
+        }
+      }
+      
+      if (resultsToInsert.length > 0) {
+        await supabase.from('check_results').insert(resultsToInsert);
+      }
+    }
+  } catch (e) {
+    console.error('Failed to save compliance check to DB', e);
   }
 
   return {
@@ -101,13 +210,13 @@ export function evaluateProductCompliance(
   };
 }
 
-export function evaluateAllProducts(
+export async function evaluateAllProducts(
   products: UniversalProduct[],
-  rules: Rule[] = MOCK_RULES
-): Record<string, ProductComplianceReport> {
+  organizationId: string
+): Promise<Record<string, ProductComplianceReport>> {
   const reports: Record<string, ProductComplianceReport> = {};
-  products.forEach((p) => {
-    reports[p.id] = evaluateProductCompliance(p, rules);
-  });
+  for (const p of products) {
+    reports[p.id] = await evaluateProductCompliance(p, organizationId);
+  }
   return reports;
 }
