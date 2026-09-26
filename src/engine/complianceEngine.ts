@@ -161,6 +161,9 @@ export async function evaluateProductCompliance(
     overallStatus = 'ACTION_REQUIRED';
   }
 
+  let insertedCheckId: string | undefined = undefined;
+  const computedOverallScore = 100 - (overallBlocking * 20 + overallWarning * 10);
+
   // 3. Save report to Supabase (compliance_checks and check_results)
   try {
     // Upsert or Insert compliance_check
@@ -170,7 +173,7 @@ export async function evaluateProductCompliance(
         organization_id: organizationId,
         product_id: product.id,
         status: 'COMPLETED',
-        risk_score: 100 - (overallBlocking * 20 + overallWarning * 10), // Example formula
+        risk_score: computedOverallScore,
         risk_level: overallStatus === 'BLOCKED' ? 'HIGH' : overallStatus === 'ACTION_REQUIRED' ? 'MEDIUM' : 'LOW',
         decision: overallStatus === 'READY' ? 'APPROVED' : 'REVIEW'
       }])
@@ -178,6 +181,7 @@ export async function evaluateProductCompliance(
       .single();
 
     if (checkData && !checkError) {
+      insertedCheckId = checkData.id;
       // Insert check results
       const resultsToInsert = [];
       for (const market of Object.values(marketSummaries)) {
@@ -206,6 +210,8 @@ export async function evaluateProductCompliance(
     productId: product.id,
     productName: product.name,
     overallStatus,
+    overallScore: computedOverallScore,
+    checkId: insertedCheckId,
     marketSummaries,
     evaluatedAt: new Date().toISOString()
   };

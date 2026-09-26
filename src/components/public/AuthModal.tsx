@@ -42,6 +42,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           setError("Compte créé avec succès ! Veuillez vérifier vos e-mails pour le confirmer avant de vous connecter.");
           setIsLoading(false);
           return;
+        } else {
+          onSuccess();
         }
       } else if (authMode === 'login') {
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -49,6 +51,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           password,
         });
         if (signInError) throw signInError;
+        onSuccess();
       } else if (authMode === 'forgot_password') {
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin,

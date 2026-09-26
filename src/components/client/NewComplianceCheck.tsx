@@ -75,24 +75,38 @@ export const NewComplianceCheck: React.FC = () => {
       const report = await evaluateProductCompliance(productToEval, organizationId);
       
       const marketReport = report.marketSummaries[destCountry];
-      const isHighRisk = ['russia', 'iran', 'syria'].includes(country.toLowerCase()) || ['russia', 'iran', 'syria'].includes(destCountry.toLowerCase());
       
-      const finalRiskScore = isHighRisk ? 85 : (marketReport ? 100 - marketReport.score : 10);
-      const riskLevel = finalRiskScore > 60 ? 'HIGH' : finalRiskScore > 30 ? 'MEDIUM' : 'LOW';
+      const finalRiskScore = report.overallScore || (marketReport ? marketReport.score : 100);
+      const riskLevel = finalRiskScore < 40 ? 'HIGH' : finalRiskScore < 70 ? 'MEDIUM' : 'LOW';
+
+      // 4. Save the compliance check result to Supabase
+      const { data: checkData, error: checkErr } = await supabase.from('compliance_checks').insert([{
+        organization_id: organizationId,
+        product_id: newProd.id,
+        check_type: 'Manual',
+        status: report.overallStatus === 'READY' ? 'approved' : report.overallStatus === 'ACTION_REQUIRED' ? 'warning' : 'rejected',
+        risk_score: finalRiskScore,
+        risk_level: riskLevel,
+        details: { report }
+      }]).select().single();
+
+      if (checkErr) {
+        console.error('Failed to save compliance check', checkErr);
+      }
 
       setResult({
         riskScore: finalRiskScore,
         riskLevel: riskLevel,
         checks: {
-          sanctions: isHighRisk ? 'Review' : 'Clear',
-          country: isHighRisk ? 'High' : 'Clear',
+          sanctions: 'Clear',
+          country: 'Clear',
           entity: 'Clear',
           product: report.overallStatus === 'READY' ? 'Clear' : 'Review',
           docs: 'Missing'
         },
         evidence: {
-          rule: isHighRisk ? 'SANCTIONS_001' : (marketReport?.evaluations[0]?.ruleId || 'GENERAL_001'),
-          reason: isHighRisk ? 'Match detected on restricted countries list.' : (marketReport?.evaluations[0]?.issueDetails || 'Passed basic compliance check.'),
+          rule: marketReport?.evaluations[0]?.ruleId || 'GENERAL_001',
+          reason: marketReport?.evaluations[0]?.issueDetails || 'Passed basic compliance check.',
           checkedAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
         }
       });

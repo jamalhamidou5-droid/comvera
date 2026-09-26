@@ -115,6 +115,8 @@ export interface ProductComplianceReport {
   productId: string;
   productName: string;
   overallStatus: ComplianceStatus;
+  overallScore: number;
+  checkId?: string;
   marketSummaries: Record<string, MarketComplianceSummary>;
   evaluatedAt: string;
 }
