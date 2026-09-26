@@ -120,6 +120,7 @@ export async function evaluateProductCompliance(
       return {
         ruleId: rule.id,
         ruleTitle: rule.title,
+        version: rule.version,
         severity: rule.severity,
         passed: result.passed,
         legalReference: rule.legal_reference,

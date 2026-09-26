@@ -68,7 +68,7 @@ export const NewComplianceCheck: React.FC = () => {
         targetMarkets: [destCountry],
         certifications: [],
         languageLabels: {},
-        syncedFrom: 'Manual check'
+        syncedFrom: 'Manual'
       };
 
       // 3. Evaluate using the real engine (from Supabase rules)

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { AppMode, ClientTab, AdminTab, UniversalProduct } from './types';
+import { AppMode, ClientTab, AdminTab, UniversalProduct, ProductComplianceReport } from './types';
 import { MOCK_PRODUCTS } from './data/mockData';
 import { evaluateAllProducts } from './engine/complianceEngine';
 import { useAuth } from './context/AuthContext';
