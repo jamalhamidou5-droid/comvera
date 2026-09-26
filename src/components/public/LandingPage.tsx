@@ -104,7 +104,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         {/* Hero Interactive Card Preview */}
-        <div className="glass-panel glass-glow" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="glass-panel glass-glow hover-lift" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
             <div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Compliance</div>
@@ -164,7 +164,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-          <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="glass-panel hover-lift" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(244, 63, 94, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f43f5e' }}>
               <Globe2 size={22} />
             </div>
@@ -174,7 +174,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </p>
           </div>
 
-          <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="glass-panel hover-lift" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
               <Layers size={22} />
             </div>
@@ -184,7 +184,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </p>
           </div>
 
-          <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="glass-panel hover-lift" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
               <XCircle size={22} />
             </div>
@@ -208,7 +208,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-          <div className="glass-panel" style={{ padding: '2rem', position: 'relative' }}>
+          <div className="glass-panel hover-lift" style={{ padding: '2rem', position: 'relative' }}>
             <div style={{ fontSize: '3rem', fontWeight: 800, color: 'rgba(59, 130, 246, 0.2)', marginBottom: '0.5rem' }}>01</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Connectez votre boutique</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
@@ -221,7 +221,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          <div className="glass-panel" style={{ padding: '2rem', position: 'relative' }}>
+          <div className="glass-panel hover-lift" style={{ padding: '2rem', position: 'relative' }}>
             <div style={{ fontSize: '3rem', fontWeight: 800, color: 'rgba(59, 130, 246, 0.2)', marginBottom: '0.5rem' }}>02</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Sélectionnez vos marchés</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
@@ -237,7 +237,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          <div className="glass-panel" style={{ padding: '2rem', position: 'relative' }}>
+          <div className="glass-panel hover-lift" style={{ padding: '2rem', position: 'relative' }}>
             <div style={{ fontSize: '3rem', fontWeight: 800, color: 'rgba(59, 130, 246, 0.2)', marginBottom: '0.5rem' }}>03</div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Recevez votre analyse</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
@@ -254,7 +254,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
       {/* 4. SECTION "EXEMPLE CONCRET" */}
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', width: '100%' }}>
-        <div className="glass-panel glass-glow" style={{ padding: '2.5rem' }}>
+        <div className="glass-panel glass-glow hover-lift" style={{ padding: '2.5rem' }}>
           <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
             <div className="badge badge-info" style={{ marginBottom: '0.5rem' }}>Démo Interactive</div>
             <h2 style={{ fontSize: '2rem', fontWeight: 700 }}>Un produit. Trois marchés. Trois réglementations.</h2>
@@ -365,7 +365,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
           {/* Free */}
-          <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="glass-panel hover-lift" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>Free Trial</div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>For individuals testing the engine</div>
@@ -385,7 +385,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Starter */}
-          <div className="glass-panel glass-glow" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', border: '1px solid var(--accent-blue)' }}>
+          <div className="glass-panel glass-glow hover-lift" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', border: '1px solid var(--accent-blue)' }}>
             <div style={{ position: 'absolute', top: '-12px', right: '1.5rem', background: 'var(--accent-blue)', color: '#fff', padding: '0.15rem 0.65rem', borderRadius: '999px', fontSize: '0.7rem', fontWeight: 700 }}>POPULAIRE</div>
             <div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>Starter</div>
@@ -407,7 +407,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Growth */}
-          <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="glass-panel hover-lift" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>Growth</div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Pour les équipes en croissance</div>
@@ -428,7 +428,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Business */}
-          <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="glass-panel hover-lift" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>Business</div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-dim)' }}>Professionnels du commerce</div>
