@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import { ShieldAlert, ArrowRight, ArrowLeft, Building, Globe2, Loader2, CheckCircle, AlertTriangle, FileText, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
+import { evaluateProductCompliance } from '../../engine/complianceEngine';
+import { UniversalProduct } from '../../types';
 
 type WizardStep = 'entity' | 'transaction' | 'product' | 'review' | 'result';
 
 export const NewComplianceCheck: React.FC = () => {
+  const { user, organizationId } = useAuth();
   const [step, setStep] = useState<WizardStep>('entity');
   const [isScanning, setIsScanning] = useState(false);
 
@@ -21,33 +26,82 @@ export const NewComplianceCheck: React.FC = () => {
   
   const [result, setResult] = useState<any>(null);
 
-  const handleRunCheck = (e: React.FormEvent) => {
+  const handleRunCheck = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user || !organizationId) return;
+    
     setIsScanning(true);
     
-    // Simulate API / Engine delay
-    setTimeout(() => {
+    try {
+      // 1. Create a temporary product for this specific check
+      const { data: newProd, error: prodErr } = await supabase.from('products').insert([{
+        organization_id: organizationId,
+        created_by: user.id,
+        sku: `CHK-${Date.now()}`,
+        name: productName || 'Transaction Item',
+        description: `Check for ${legalName} to ${destCountry}`,
+        category: 'All', 
+        target_markets: [destCountry],
+        ingredients: [],
+        materials: [],
+        certifications: []
+      }]).select().single();
+
+      if (prodErr) throw prodErr;
+
+      // 2. Format it for the engine
+      const productToEval: UniversalProduct = {
+        id: newProd.id,
+        sku: newProd.sku,
+        name: newProd.name,
+        description: newProd.description,
+        category: newProd.category,
+        subcategory: 'General',
+        brand: 'N/A',
+        manufacturer: 'N/A',
+        countryOfOrigin: country,
+        ingredients: [],
+        materials: [],
+        weight: 0,
+        weightUnit: 'kg',
+        packagingType: 'Box',
+        targetMarkets: [destCountry],
+        certifications: [],
+        languageLabels: {},
+        syncedFrom: 'Manual check'
+      };
+
+      // 3. Evaluate using the real engine (from Supabase rules)
+      const report = await evaluateProductCompliance(productToEval, organizationId);
+      
+      const marketReport = report.marketSummaries[destCountry];
       const isHighRisk = ['russia', 'iran', 'syria'].includes(country.toLowerCase()) || ['russia', 'iran', 'syria'].includes(destCountry.toLowerCase());
       
+      const finalRiskScore = isHighRisk ? 85 : (marketReport ? 100 - marketReport.score : 10);
+      const riskLevel = finalRiskScore > 60 ? 'HIGH' : finalRiskScore > 30 ? 'MEDIUM' : 'LOW';
+
       setResult({
-        riskScore: isHighRisk ? 82 : 15,
-        riskLevel: isHighRisk ? 'HIGH' : 'LOW',
+        riskScore: finalRiskScore,
+        riskLevel: riskLevel,
         checks: {
           sanctions: isHighRisk ? 'Review' : 'Clear',
           country: isHighRisk ? 'High' : 'Clear',
           entity: 'Clear',
-          product: 'Clear',
+          product: report.overallStatus === 'READY' ? 'Clear' : 'Review',
           docs: 'Missing'
         },
         evidence: {
-          rule: isHighRisk ? 'SANCTIONS_001' : 'COUNTRY_RISK_001',
-          reason: isHighRisk ? 'Potential match detected on OFAC list for the destination country/entity.' : 'No matches found on restricted lists.',
+          rule: isHighRisk ? 'SANCTIONS_001' : (marketReport?.evaluations[0]?.ruleId || 'GENERAL_001'),
+          reason: isHighRisk ? 'Match detected on restricted countries list.' : (marketReport?.evaluations[0]?.issueDetails || 'Passed basic compliance check.'),
           checkedAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
         }
       });
-      setIsScanning(false);
       setStep('result');
-    }, 2500);
+    } catch (err) {
+      console.error('Error running check', err);
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handleGeneratePdf = async () => {
