@@ -78,12 +78,6 @@ export interface Rule {
   effectiveDate: string;
   expirationDate?: string;
   status: 'active' | 'deprecated' | 'draft';
-  evaluator: (product: UniversalProduct) => {
-    passed: boolean;
-    issueDetails?: string;
-    actionRequired?: string;
-    missingField?: string;
-  };
 }
 
 export interface RuleEvaluationResult {

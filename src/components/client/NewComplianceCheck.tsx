@@ -75,9 +75,23 @@ export const NewComplianceCheck: React.FC = () => {
       const report = await evaluateProductCompliance(productToEval, organizationId);
       
       const marketReport = report.marketSummaries[destCountry];
-      
-      const finalRiskScore = report.overallScore || (marketReport ? marketReport.score : 100);
-      const riskLevel = finalRiskScore < 40 ? 'HIGH' : finalRiskScore < 70 ? 'MEDIUM' : 'LOW';
+
+      if (!marketReport) {
+        throw new Error(`No compliance evaluation available for market ${destCountry}.`);
+      }
+
+      const riskScore = Math.max(0, Math.min(100, 100 - marketReport.score));
+
+      const riskLevel =
+        marketReport.status === 'BLOCKED'
+          ? 'HIGH'
+          : marketReport.status === 'ACTION_REQUIRED'
+            ? 'MEDIUM'
+            : 'LOW';
+
+      const firstIssue = marketReport.evaluations.find(
+        (evaluation) => !evaluation.passed
+      );
 
       // 4. Save the compliance check result to Supabase
       const { data: checkData, error: checkErr } = await supabase.from('compliance_checks').insert([{
@@ -85,7 +99,7 @@ export const NewComplianceCheck: React.FC = () => {
         product_id: newProd.id,
         check_type: 'Manual',
         status: report.overallStatus === 'READY' ? 'approved' : report.overallStatus === 'ACTION_REQUIRED' ? 'warning' : 'rejected',
-        risk_score: finalRiskScore,
+        risk_score: riskScore,
         risk_level: riskLevel,
         details: { report }
       }]).select().single();
@@ -95,19 +109,33 @@ export const NewComplianceCheck: React.FC = () => {
       }
 
       setResult({
-        riskScore: finalRiskScore,
-        riskLevel: riskLevel,
+        riskScore,
+        riskLevel,
         checks: {
-          sanctions: 'Clear',
-          country: 'Clear',
-          entity: 'Clear',
-          product: report.overallStatus === 'READY' ? 'Clear' : 'Review',
-          docs: 'Missing'
+          sanctions: 'Not evaluated',
+          country: marketReport.status === 'BLOCKED' ? 'High' : 'Clear',
+          entity: 'Provided',
+          product:
+            marketReport.status === 'READY'
+              ? 'Clear'
+              : 'Review',
+          docs: firstIssue?.missingField
+            ? `Missing: ${firstIssue.missingField}`
+            : 'Reviewed'
         },
         evidence: {
-          rule: marketReport?.evaluations[0]?.ruleId || 'GENERAL_001',
-          reason: marketReport?.evaluations[0]?.issueDetails || 'Passed basic compliance check.',
-          checkedAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+          rule:
+            firstIssue?.ruleId ||
+            marketReport.evaluations[0]?.ruleId ||
+            'NO_RULE',
+          reason:
+            firstIssue?.issueDetails ||
+            'All applicable compliance rules passed.',
+          checkedAt: new Date().toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          })
         }
       });
       setStep('result');

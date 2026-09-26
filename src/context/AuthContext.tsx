@@ -26,15 +26,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Bypass pour le mode développement (Mock)
-    if (import.meta.env.VITE_SUPABASE_URL.includes('mock-project-id')) {
-      setUser({ id: 'mock-user-123', email: 'test@comvera.com' } as User);
-      setRole('client'); // Mettre 'admin' pour tester l'admin
-      setOrganizationId('mock-org-123');
-      setLoading(false);
-      return;
-    }
-
     // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);

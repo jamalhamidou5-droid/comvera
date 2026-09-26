@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AppMode, ClientTab, AdminTab, UniversalProduct, ProductComplianceReport } from './types';
-import { MOCK_PRODUCTS } from './data/mockData';
 import { evaluateAllProducts } from './engine/complianceEngine';
 import { useAuth } from './context/AuthContext';
 import { supabase } from './lib/supabase';
@@ -70,7 +69,7 @@ export const App: React.FC = () => {
   React.useEffect(() => {
     const fetchProducts = async () => {
       if (!user) {
-        setProducts(MOCK_PRODUCTS); // Pour la démo non connectée
+        setProducts([]);
         setIsLoadingProducts(false);
         return;
       }

@@ -6,7 +6,7 @@ import {
   ComplianceStatus
 } from '../types';
 import { supabase } from '../lib/supabase';
-import { MOCK_MARKETS } from '../data/mockData';
+
 
 // Registre des fonctions d'évaluation (la logique métier reste dans le code)
 const evaluatorRegistry: Record<string, (product: UniversalProduct) => { passed: boolean; issueDetails?: string; actionRequired?: string; missingField?: string }> = {
@@ -79,9 +79,13 @@ export async function evaluateProductCompliance(
 
   const activeRules = dbRules || [];
 
-  // 2. Fetch markets from Supabase (or fallback to MOCK)
+  // 2. Fetch markets from Supabase
   const { data: dbMarkets } = await supabase.from('markets').select('*');
-  const availableMarkets = dbMarkets && dbMarkets.length > 0 ? dbMarkets : MOCK_MARKETS;
+  
+  if (!dbMarkets || dbMarkets.length === 0) {
+    throw new Error('No markets configured in the database.');
+  }
+  const availableMarkets = dbMarkets;
 
   for (const marketCode of product.targetMarkets) {
     const marketInfo = availableMarkets.find((m: any) => m.code === marketCode) || {
@@ -101,8 +105,28 @@ export async function evaluateProductCompliance(
     let blockingCount = 0;
 
     const evaluations = applicableRules.map((rule) => {
-      // Find evaluator logic from registry, fallback to always pass if not defined
-      const evaluator = evaluatorRegistry[rule.id] || (() => ({ passed: true }));
+      const evaluator = evaluatorRegistry[rule.id];
+      if (!evaluator) {
+        if (rule.severity === 'BLOCKING') {
+          blockingCount++;
+          overallBlocking++;
+        } else {
+          warningCount++;
+          overallWarning++;
+        }
+        return {
+          ruleId: rule.id,
+          ruleTitle: rule.title,
+          version: rule.version,
+          severity: rule.severity,
+          passed: false,
+          legalReference: rule.legal_reference,
+          sourceUrl: rule.source_url,
+          issueDetails: 'This rule has no evaluator implemented in the compliance engine.',
+          actionRequired: 'Implement and validate the evaluator before activating this rule.'
+        };
+      }
+
       const result = evaluator(product);
       
       if (result.passed) {
@@ -162,7 +186,19 @@ export async function evaluateProductCompliance(
   }
 
   let insertedCheckId: string | undefined = undefined;
-  const computedOverallScore = 100 - (overallBlocking * 20 + overallWarning * 10);
+
+  const totalEvaluations = Object.values(marketSummaries)
+    .reduce((sum, market) => sum + market.evaluations.length, 0);
+
+  const failedEvaluations = Object.values(marketSummaries)
+    .reduce(
+      (sum, market) => sum + market.blockingCount + market.warningCount,
+      0
+    );
+
+  const riskScore = totalEvaluations > 0
+    ? Math.min(100, Math.round((failedEvaluations / totalEvaluations) * 100))
+    : 0;
 
   // 3. Save report to Supabase (compliance_checks and check_results)
   try {
@@ -173,7 +209,7 @@ export async function evaluateProductCompliance(
         organization_id: organizationId,
         product_id: product.id,
         status: 'COMPLETED',
-        risk_score: computedOverallScore,
+        risk_score: riskScore,
         risk_level: overallStatus === 'BLOCKED' ? 'HIGH' : overallStatus === 'ACTION_REQUIRED' ? 'MEDIUM' : 'LOW',
         decision: overallStatus === 'READY' ? 'APPROVED' : 'REVIEW'
       }])
@@ -210,7 +246,7 @@ export async function evaluateProductCompliance(
     productId: product.id,
     productName: product.name,
     overallStatus,
-    overallScore: computedOverallScore,
+    overallScore: riskScore,
     checkId: insertedCheckId,
     marketSummaries,
     evaluatedAt: new Date().toISOString()

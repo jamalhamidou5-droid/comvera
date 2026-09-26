@@ -1,226 +1,284 @@
-import React, { useState, useEffect } from 'react';
-import { Code, History, Plus, Save, GitBranch, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Plus, Save, RefreshCw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
-import { Rule } from '../../types';
+
+interface DbRule {
+  id: string;
+  version: string;
+  title: string;
+  country_code: string;
+  category: string;
+  severity: 'BLOCKING' | 'WARNING' | 'INFO';
+  condition_summary: string;
+  requirement_text: string;
+  legal_reference: string;
+  source_url: string;
+  effective_date: string;
+  expiration_date?: string | null;
+  status: 'active' | 'deprecated' | 'draft';
+}
 
 export const RulesEngineEditor: React.FC = () => {
-  const { user } = useAuth();
-  const [rules, setRules] = useState<Rule[]>([]);
-  const [selectedRuleId, setSelectedRuleId] = useState<string>('');
-  const [selectedVersion, setSelectedVersion] = useState<'v2.1.0' | 'v1.0.0'>('v2.1.0');
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Edit State
-  const [isEditing, setIsEditing] = useState(false);
-  const [editReqText, setEditReqText] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [rules, setRules] = useState<DbRule[]>([]);
+  const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchRules();
-  }, [user]);
+    loadRules();
+  }, []);
 
-  const fetchRules = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.from('rules').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      if (data) {
-        const formattedRules: Rule[] = data.map(r => ({
-          id: r.id,
-          title: r.title,
-          description: r.description,
-          countryCode: r.country_code,
-          category: r.category,
-          severity: r.severity,
-          requirementText: r.requirement_text,
-          status: r.status,
-          version: '2.1.0',
-          conditionSummary: 'Evaluated by rules engine',
-          legalReference: r.legal_reference || 'TBD',
-          sourceUrl: r.source_url || '#',
-          effectiveDate: r.effective_date || new Date().toISOString(),
-          evaluator: () => ({ passed: true }) // Dummy evaluator since this is admin UI
-        }));
-        setRules(formattedRules);
-        if (formattedRules.length > 0 && !selectedRuleId) {
-          setSelectedRuleId(formattedRules[0].id);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch rules', err);
-    } finally {
-      setIsLoading(false);
+  const loadRules = async () => {
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from('rules')
+      .select('*')
+      .order('country_code')
+      .order('title');
+
+    if (error) {
+      console.error(error);
+      setLoading(false);
+      return;
     }
+
+    setRules(data || []);
+
+    if (data?.length) {
+      setSelectedRuleId(data[0].id);
+    }
+
+    setLoading(false);
   };
 
-  const rule = rules.find((r) => r.id === selectedRuleId) || rules[0];
+  const selectedRule = rules.find((rule) => rule.id === selectedRuleId) || null;
 
-  useEffect(() => {
-    if (rule) {
-      setEditReqText(rule.requirementText);
-      setIsEditing(false);
-    }
-  }, [rule]);
+  const saveRule = async () => {
+    if (!selectedRule) return;
 
-  const handleSaveRule = async () => {
-    if (!rule || !user) return;
-    setIsSaving(true);
-    try {
-      const { error } = await supabase
-        .from('rules')
-        .update({ requirement_text: editReqText })
-        .eq('id', rule.id);
-        
-      if (error) throw error;
-      
-      // Update local state
-      setRules(prev => prev.map(r => r.id === rule.id ? { ...r, requirementText: editReqText } : r));
-      setIsEditing(false);
-    } catch (err) {
-      console.error('Failed to save rule', err);
-    } finally {
-      setIsSaving(false);
+    setSaving(true);
+
+    const { error } = await supabase
+      .from('rules')
+      .update({
+        title: selectedRule.title,
+        country_code: selectedRule.country_code,
+        category: selectedRule.category,
+        severity: selectedRule.severity,
+        condition_summary: selectedRule.condition_summary,
+        requirement_text: selectedRule.requirement_text,
+        legal_reference: selectedRule.legal_reference,
+        source_url: selectedRule.source_url,
+        effective_date: selectedRule.effective_date,
+        expiration_date: selectedRule.expiration_date,
+        status: selectedRule.status
+      })
+      .eq('id', selectedRule.id);
+
+    if (error) {
+      console.error(error);
+      alert('Failed to save rule.');
+    } else {
+      alert('Rule saved successfully.');
     }
+
+    setSaving(false);
   };
+
+  const createRule = async () => {
+    const id = `RULE-${Date.now()}`;
+
+    const { data, error } = await supabase
+      .from('rules')
+      .insert({
+        id,
+        version: '1.0.0',
+        title: 'New Compliance Rule',
+        country_code: 'US',
+        category: 'All',
+        severity: 'WARNING',
+        condition_summary: 'Define the condition',
+        requirement_text: 'Define the requirement',
+        legal_reference: '',
+        source_url: '',
+        effective_date: new Date().toISOString().slice(0, 10),
+        status: 'draft'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error(error);
+      alert(error.message);
+      return;
+    }
+
+    setRules((prev) => [data, ...prev]);
+    setSelectedRuleId(data.id);
+  };
+
+  if (loading) {
+    return <div style={{ padding: '2rem' }}>Loading rules from database...</div>;
+  }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Deterministic Rules Engine Editor</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Logic editor and history versioning for compliance rules (Connected to Supabase).
-          </p>
+    <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '2rem', height: '100%' }}>
+      {/* Sidebar with Rule List */}
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: '1.1rem', margin: 0 }}>Compliance Rules</h2>
+          <button className="btn btn-primary btn-sm" onClick={createRule}>
+            <Plus size={16} /> New
+          </button>
         </div>
-        <button className="btn btn-primary" onClick={() => alert('Création de règle non implémentée dans cette démo')}>
-          <Plus size={16} /> Create New Rule
-        </button>
+        
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button className="btn btn-secondary btn-sm" onClick={loadRules} title="Refresh rules">
+            <RefreshCw size={14} /> Refresh
+          </button>
+        </div>
+
+        <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {rules.map(rule => (
+            <div 
+              key={rule.id}
+              onClick={() => setSelectedRuleId(rule.id)}
+              style={{
+                padding: '0.75rem',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                background: selectedRuleId === rule.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                borderColor: selectedRuleId === rule.id ? 'var(--accent-blue)' : 'var(--border-subtle)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{rule.id}</span>
+                <span className={`badge ${rule.status === 'active' ? 'badge-success' : 'badge-warning'}`}>
+                  {rule.status}
+                </span>
+              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                {rule.title}
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', fontSize: '0.75rem' }}>
+                <span style={{ background: 'var(--bg-elevated)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>
+                  {rule.country_code}
+                </span>
+                <span style={{ background: 'var(--bg-elevated)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>
+                  {rule.severity}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '1.5rem' }}>
-        {/* Rule Selector */}
-        <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '600px', overflowY: 'auto' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Rules Library</h3>
+      {/* Main Editor Area */}
+      {selectedRule ? (
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Edit Rule: {selectedRule.id}</h2>
+            <button className="btn btn-primary" onClick={saveRule} disabled={saving}>
+              <Save size={16} /> {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
 
-          {isLoading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}><Loader2 className="animate-spin" /></div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {rules.map((r) => {
-                const isSelected = selectedRuleId === r.id;
-                return (
-                  <div
-                    key={r.id}
-                    style={{
-                      padding: '0.9rem',
-                      borderRadius: '8px',
-                      background: isSelected ? 'rgba(59, 130, 246, 0.12)' : 'rgba(255,255,255,0.03)',
-                      border: `1px solid ${isSelected ? 'var(--accent-blue)' : 'var(--border-subtle)'}`,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.35rem'
-                    }}
-                    onClick={() => setSelectedRuleId(r.id)}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{r.title}</span>
-                      <span className="badge badge-info" style={{ fontSize: '0.65rem' }}>v{r.version}</span>
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                      [{r.countryCode}] • {r.category} • Severity: {r.severity}
-                    </div>
-                  </div>
-                );
-              })}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Rule Title</label>
+              <input 
+                type="text" 
+                className="input-field" 
+                value={selectedRule.title} 
+                onChange={e => setRules(rules.map(r => r.id === selectedRule.id ? { ...r, title: e.target.value } : r))}
+              />
             </div>
-          )}
-        </div>
-
-        {/* Rule Builder & Versioning Inspector */}
-        {rule ? (
-          <div className="glass-panel" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{rule.title}</h3>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>ID: {rule.id}</div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Country Code</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  value={selectedRule.country_code} 
+                  onChange={e => setRules(rules.map(r => r.id === selectedRule.id ? { ...r, country_code: e.target.value } : r))}
+                />
               </div>
-
-              {/* Version Switcher */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.25rem 0.6rem', borderRadius: '8px', fontSize: '0.8rem' }}>
-                <History size={14} color="var(--accent-blue)" />
-                <span>Version:</span>
-                <button
-                  className={`btn ${selectedVersion === 'v2.1.0' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
-                  style={{ padding: '0.15rem 0.45rem', fontSize: '0.725rem' }}
-                  onClick={() => setSelectedVersion('v2.1.0')}
-                >
-                  v2.1.0 (Active)
-                </button>
-                <button
-                  className={`btn ${selectedVersion === 'v1.0.0' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
-                  style={{ padding: '0.15rem 0.45rem', fontSize: '0.725rem' }}
-                  onClick={() => setSelectedVersion('v1.0.0')}
-                >
-                  v1.0.0 (Archived)
-                </button>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Category</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  value={selectedRule.category} 
+                  onChange={e => setRules(rules.map(r => r.id === selectedRule.id ? { ...r, category: e.target.value } : r))}
+                />
               </div>
-            </div>
-
-            {/* IF / THEN Logic Visualizer */}
-            <div style={{ background: 'rgba(15,23,42,0.9)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', fontWeight: 700, textTransform: 'uppercase' }}>Rule Evaluation Logic</div>
-                {isEditing ? (
-                  <button className="btn btn-primary btn-sm" onClick={handleSaveRule} disabled={isSaving}>
-                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Logic
-                  </button>
-                ) : (
-                  <button className="btn btn-secondary btn-sm" onClick={() => setIsEditing(true)}>
-                    <Code size={14} /> Edit Logic
-                  </button>
-                )}
-              </div>
-
-              {/* IF Block */}
-              <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '0.85rem', borderRadius: '6px', borderLeft: '3px solid var(--accent-blue)' }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-blue)' }}>IF CONDITION (Read-Only)</div>
-                <code style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '0.2rem', display: 'block' }}>
-                  country === '{rule.countryCode}' AND category === '{rule.category}'
-                </code>
-              </div>
-
-              {/* THEN Block */}
-              <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '0.85rem', borderRadius: '6px', borderLeft: '3px solid #34d399' }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#34d399' }}>THEN REQUIREMENT</div>
-                {isEditing ? (
-                  <textarea 
-                    value={editReqText}
-                    onChange={(e) => setEditReqText(e.target.value)}
-                    style={{ width: '100%', minHeight: '60px', marginTop: '0.5rem', background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border-subtle)', borderRadius: '4px', color: 'var(--text-main)', padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.85rem' }}
-                  />
-                ) : (
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '0.4rem' }}>
-                    {rule.requirementText}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Version Audit Snapshot Notice */}
-            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', fontSize: '0.825rem', color: 'var(--text-muted)' }}>
-              <GitBranch size={16} color="var(--accent-purple)" style={{ display: 'inline', marginRight: '0.4rem' }} />
-              <strong>Historical Rule Snapshot:</strong> {selectedVersion === 'v2.1.0' ? 'Active version since 2026-01-01' : 'Archived version (valid 2025-01-01 to 2025-12-31)'}. Enables auditing past compliance decisions.
             </div>
           </div>
-        ) : (
-          <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-            <AlertCircle size={48} style={{ opacity: 0.5, marginBottom: '1rem' }} />
-            <p>No rule selected or available</p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Severity</label>
+              <select 
+                className="input-field"
+                value={selectedRule.severity}
+                onChange={e => setRules(rules.map(r => r.id === selectedRule.id ? { ...r, severity: e.target.value as any } : r))}
+              >
+                <option value="BLOCKING">BLOCKING</option>
+                <option value="WARNING">WARNING</option>
+                <option value="INFO">INFO</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Status</label>
+              <select 
+                className="input-field"
+                value={selectedRule.status}
+                onChange={e => setRules(rules.map(r => r.id === selectedRule.id ? { ...r, status: e.target.value as any } : r))}
+              >
+                <option value="active">Active</option>
+                <option value="draft">Draft</option>
+                <option value="deprecated">Deprecated</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Effective Date</label>
+              <input 
+                type="date" 
+                className="input-field" 
+                value={selectedRule.effective_date?.slice(0, 10) || ''} 
+                onChange={e => setRules(rules.map(r => r.id === selectedRule.id ? { ...r, effective_date: e.target.value } : r))}
+              />
+            </div>
           </div>
-        )}
-      </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Condition Summary</label>
+            <input 
+              type="text" 
+              className="input-field" 
+              value={selectedRule.condition_summary} 
+              onChange={e => setRules(rules.map(r => r.id === selectedRule.id ? { ...r, condition_summary: e.target.value } : r))}
+            />
+          </div>
+
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Requirement Text (JSON or Logic Expression)</label>
+            <textarea 
+              className="input-field" 
+              style={{ flex: 1, minHeight: '200px', fontFamily: 'monospace' }}
+              value={selectedRule.requirement_text} 
+              onChange={e => setRules(rules.map(r => r.id === selectedRule.id ? { ...r, requirement_text: e.target.value } : r))}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+          Select a rule to edit or create a new one.
+        </div>
+      )}
     </div>
   );
 };

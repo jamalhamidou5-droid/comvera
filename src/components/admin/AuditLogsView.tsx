@@ -1,42 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { ShieldCheck, History, Filter, Loader2, AlertCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ShieldCheck } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 
+interface AuditLog {
+  id: string;
+  user_id: string | null;
+  action: string;
+  resource_type: string;
+  resource_id: string | null;
+  created_at: string;
+}
+
 export const AuditLogsView: React.FC = () => {
-  const { user } = useAuth();
-  const [logs, setLogs] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { organizationId } = useAuth();
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchLogs();
-  }, [user]);
+    if (!organizationId) {
+      setLoading(false);
+      return;
+    }
 
-  const fetchLogs = async () => {
-    setIsLoading(true);
-    try {
+    const loadLogs = async () => {
+      setLoading(true);
       const { data, error } = await supabase
         .from('audit_logs')
-        .select(`
-          id,
-          action,
-          resource_type,
-          details,
-          ip_address,
-          created_at,
-          user_id
-        `)
+        .select('*')
+        .eq('organization_id', organizationId)
         .order('created_at', { ascending: false })
-        .limit(50);
-        
-      if (error) throw error;
-      setLogs(data || []);
-    } catch (err) {
-      console.error('Failed to fetch audit logs', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        .limit(100);
+
+      if (error) {
+        console.error(error);
+      } else {
+        setLogs(data || []);
+      }
+      setLoading(false);
+    };
+
+    loadLogs();
+  }, [organizationId]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -48,59 +53,42 @@ export const AuditLogsView: React.FC = () => {
       </div>
 
       <div className="glass-panel table-container">
-        {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
-            <Loader2 className="animate-spin" size={32} color="var(--accent-blue)" />
-          </div>
-        ) : logs.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-            <AlertCircle size={48} style={{ opacity: 0.5, marginBottom: '1rem' }} />
-            <p>Aucun log d'audit trouvé.</p>
-          </div>
-        ) : (
-          <table className="data-table">
-            <thead>
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Resource Type</th>
+              <th>User ID</th>
+              <th>Action</th>
+              <th>Resource ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
               <tr>
-                <th>Timestamp (UTC)</th>
-                <th>Resource Type</th>
-                <th>User ID</th>
-                <th>Action</th>
-                <th>Details</th>
-                <th>IP Address</th>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>Loading audit logs...</td>
               </tr>
-            </thead>
-            <tbody>
-              {logs.map((log) => (
+            ) : logs.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>No audit activity yet.</td>
+              </tr>
+            ) : (
+              logs.map((log) => (
                 <tr key={log.id}>
                   <td>
-                    <code style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                      {new Date(log.created_at).toLocaleString()}
-                    </code>
+                    <code>{new Date(log.created_at).toLocaleString()}</code>
                   </td>
                   <td>
-                    <span className="badge badge-info">{log.resource_type || 'System'}</span>
+                    <span className="badge badge-info">{log.resource_type}</span>
                   </td>
-                  <td>
-                    <span style={{ fontWeight: 500, fontSize: '0.75rem', fontFamily: 'monospace' }}>
-                      {log.user_id ? log.user_id.substring(0, 8) + '...' : 'System'}
-                    </span>
-                  </td>
-                  <td>
-                    <span style={{ fontWeight: 600 }}>{log.action}</span>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      {log.details ? JSON.stringify(log.details) : 'N/A'}
-                    </span>
-                  </td>
-                  <td>
-                    <code style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{log.ip_address || 'N/A'}</code>
-                  </td>
+                  <td>{log.user_id || 'System'}</td>
+                  <td>{log.action}</td>
+                  <td>{log.resource_id || '—'}</td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -22,10 +22,7 @@ const INITIAL_INTEGRATIONS: Integration[] = [
     color: '#34d399',
     bgColor: 'rgba(16, 185, 129, 0.15)',
     description: 'Sync automatique OAuth 2.0 avec votre boutique Shopify.',
-    status: 'connected',
-    domain: 'acme-store.myshopify.com',
-    productsSynced: 1248,
-    lastSync: 'Il y a 2 minutes',
+    status: 'coming_soon' as any,
   },
   {
     id: 'woocommerce',
@@ -34,7 +31,7 @@ const INITIAL_INTEGRATIONS: Integration[] = [
     color: '#8b5cf6',
     bgColor: 'rgba(139, 92, 246, 0.15)',
     description: 'Connectez votre instance WooCommerce via l\'API REST v3 de WordPress pour synchroniser vos attributs produits.',
-    status: 'available',
+    status: 'coming_soon' as any,
   },
   {
     id: 'csv',
@@ -52,7 +49,7 @@ const INITIAL_INTEGRATIONS: Integration[] = [
     color: '#06b6d4',
     bgColor: 'rgba(6, 182, 212, 0.15)',
     description: 'Intégration directe ERP / PIM via notre API REST avec authentification par clé API.',
-    status: 'available',
+    status: 'coming_soon' as any,
   },
 ];
 
@@ -71,29 +68,16 @@ export const IntegrationsView: React.FC = () => {
   };
 
   const handleSyncNow = (id: string) => {
+    if (id !== 'csv') return;
     setSyncingId(id);
     setTimeout(() => {
       setSyncingId(null);
-      setIntegrations((prev) =>
-        prev.map((i) =>
-          i.id === id
-            ? { ...i, lastSync: 'À l\'instant', productsSynced: (i.productsSynced || 0) + Math.floor(Math.random() * 15) }
-            : i
-        )
-      );
-      showToast(`✓ Synchronisation ${id} terminée avec succès !`);
+      showToast(`✓ Fonctionnalité d'import CSV en cours d'intégration dans la V2.`);
     }, 1500);
   };
 
   const handleDisconnect = (id: string) => {
-    setIntegrations((prev) =>
-      prev.map((i) =>
-        i.id === id
-          ? { ...i, status: 'available' as const, domain: undefined, productsSynced: undefined, lastSync: undefined }
-          : i
-      )
-    );
-    showToast(`⚠ ${id.charAt(0).toUpperCase() + id.slice(1)} déconnecté.`);
+    // No-op
   };
 
   const handleConnect = (id: string) => {
@@ -166,6 +150,8 @@ export const IntegrationsView: React.FC = () => {
                     <span className="badge badge-ready">
                       <CheckCircle2 size={12} /> Connected
                     </span>
+                  ) : integration.status === 'coming_soon' as any ? (
+                    <span className="badge" style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>Coming soon</span>
                   ) : (
                     <span className="badge badge-info">Available</span>
                   )}
@@ -233,8 +219,9 @@ export const IntegrationsView: React.FC = () => {
                   className="btn btn-secondary"
                   style={{ width: 'fit-content', marginTop: 'auto' }}
                   onClick={() => handleConnect(integration.id)}
+                  disabled={integration.status === 'coming_soon' as any}
                 >
-                  <Link2 size={14} /> Connect {integration.name}
+                  {integration.status === 'coming_soon' as any ? 'Bientôt disponible' : <><Link2 size={14} /> Connect {integration.name}</>}
                 </button>
               </>
             )}
