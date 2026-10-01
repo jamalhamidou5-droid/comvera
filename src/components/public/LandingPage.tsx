@@ -15,7 +15,9 @@ import {
   Building2,
   ChevronRight,
   X,
-  Mail
+  Mail,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -30,6 +32,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [selectedTab, setSelectedTab] = useState<'FR' | 'JP' | 'BR'>('JP');
   const [showCaseStudyDetail, setShowCaseStudyDetail] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  
+  // Contact Form State
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactError, setContactError] = useState('');
+  const [isContactSending, setIsContactSending] = useState(false);
+  const [isContactSuccess, setIsContactSuccess] = useState(false);
+
+  const handleContactSubmit = () => {
+    setContactError('');
+    if (!contactMessage.trim()) {
+      setContactError('Veuillez entrer un message avant d\'envoyer.');
+      return;
+    }
+
+    setIsContactSending(true);
+    // Simulate network request
+    setTimeout(() => {
+      setIsContactSending(false);
+      setIsContactSuccess(true);
+      setTimeout(() => {
+        setIsContactModalOpen(false);
+        setTimeout(() => {
+          setIsContactSuccess(false);
+          setContactMessage('');
+        }, 300);
+      }, 2500);
+    }, 1200);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '5rem', paddingBottom: '4rem' }}>
@@ -645,26 +675,49 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <span style={{ fontWeight: 600, color: '#93c5fd' }}>hello.comvera@gmail.com</span>
             </div>
 
-            <div className="input-group">
-              <label className="input-label">Votre message</label>
-              <textarea 
-                className="input-field" 
-                rows={4} 
-                placeholder="Comment pouvons-nous vous aider ?"
-                style={{ resize: 'none' }}
-              ></textarea>
-            </div>
+            {contactError && (
+              <div style={{ padding: '0.75rem', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                <AlertCircle size={18} />
+                {contactError}
+              </div>
+            )}
 
-            <button 
-              className="btn btn-primary" 
-              style={{ width: '100%', marginTop: '0.5rem', padding: '0.75rem' }}
-              onClick={() => {
-                alert('Merci ! Votre message a été simulé avec succès.');
-                setIsContactModalOpen(false);
-              }}
-            >
-              Envoyer le message <ArrowRight size={16} />
-            </button>
+            {isContactSuccess ? (
+              <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                <div style={{ width: '64px', height: '64px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
+                  <CheckCircle2 size={32} />
+                </div>
+                <h4 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Message envoyé !</h4>
+                <p style={{ color: 'var(--text-muted)' }}>Nous vous répondrons dans les plus brefs délais.</p>
+              </div>
+            ) : (
+              <>
+                <div className="input-group">
+                  <label className="input-label">Votre message</label>
+                  <textarea 
+                    className="input-field" 
+                    rows={4} 
+                    placeholder="Comment pouvons-nous vous aider ?"
+                    style={{ resize: 'none' }}
+                    value={contactMessage}
+                    onChange={(e) => {
+                      setContactMessage(e.target.value);
+                      if (contactError) setContactError('');
+                    }}
+                  ></textarea>
+                </div>
+
+                <button 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', marginTop: '0.5rem', padding: '0.75rem' }}
+                  onClick={handleContactSubmit}
+                  disabled={isContactSending}
+                >
+                  {isContactSending ? <Loader2 size={16} className="animate-spin" /> : 'Envoyer le message'}
+                  {!isContactSending && <ArrowRight size={16} style={{ marginLeft: '0.5rem' }} />}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
