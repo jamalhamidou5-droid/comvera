@@ -165,7 +165,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* 2. SECTION "LE PROBLÈME" */}
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', width: '100%' }}>
+      <section id="features" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', width: '100%', scrollMarginTop: '80px' }}>
         <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 3rem auto' }}>
           <h2 style={{ fontSize: '2.25rem', fontWeight: 700, marginBottom: '1rem' }}>
             Vendre dans un nouveau pays ne devrait pas nécessiter une équipe juridique.
@@ -209,7 +209,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* 3. SECTION "COMMENT ÇA MARCHE" */}
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', width: '100%' }}>
+      <section id="how-it-works" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', width: '100%', scrollMarginTop: '80px' }}>
         <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 3rem auto' }}>
           <h2 style={{ fontSize: '2.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
             Comment ça marche
@@ -364,8 +364,45 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* 5. SECTION PRICING */}
+      {/* 4.5. SECTION AVIS */}
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', width: '100%' }}>
+        <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 3rem auto' }}>
+          <h2 className="fade-in-up" style={{ fontSize: '2.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Ils nous font confiance
+          </h2>
+          <p className="fade-in-up fade-in-up-delay-1" style={{ color: 'var(--text-muted)' }}>
+            Rejoignez plus de 200 000 utilisateurs qui sécurisent leurs ventes avec Comvera.
+          </p>
+          <div className="fade-in-up fade-in-up-delay-2" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem', color: '#f59e0b' }}>
+            {'★★★★★'.split('').map((star, i) => <span key={i} style={{ fontSize: '1.25rem' }}>{star}</span>)}
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          {[
+            { name: 'Sarah L.', role: 'CEO, Beauté Bio', text: '"Comvera nous a fait gagner des mois de recherches juridiques pour notre lancement au Japon. Indispensable !"' },
+            { name: 'Marc T.', role: 'Directeur Logistique', text: '"Fini les conteneurs bloqués à la douane. Les alertes de conformité sont précises et toujours à jour."' },
+            { name: 'Elena G.', role: 'E-commerce Manager', text: '"La génération de rapports douaniers en un clic a complètement transformé notre workflow d\'expédition."' }
+          ].map((avis, index) => (
+            <div key={index} className="glass-panel hover-lift fade-in-up" style={{ padding: '2rem', animationDelay: `${index * 0.15}s` }}>
+              <div style={{ color: '#f59e0b', fontSize: '1.2rem', marginBottom: '1rem' }}>★★★★★</div>
+              <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '1.5rem', lineHeight: 1.6 }}>{avis.text}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff' }}>
+                  {avis.name.charAt(0)}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{avis.name}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>{avis.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. SECTION PRICING */}
+      <section id="pricing" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', width: '100%', scrollMarginTop: '80px' }}>
         <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 3rem auto' }}>
           <h2 style={{ fontSize: '2.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
             Simple, transparent pricing
@@ -461,6 +498,49 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </div>
       </section>
+      {/* FAQ SECTION */}
+      <section id="faq" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 1.5rem', width: '100%', scrollMarginTop: '80px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <h2 className="fade-in-up" style={{ fontSize: '2.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Questions fréquentes
+          </h2>
+          <p className="fade-in-up fade-in-up-delay-1" style={{ color: 'var(--text-muted)' }}>
+            Tout ce que vous devez savoir pour démarrer avec Comvera.
+          </p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {[
+            { q: 'Comment les données réglementaires sont-elles mises à jour ?', a: 'Notre moteur scrute en temps réel les journaux officiels de plus de 50 pays. Les règles de conformité sont mises à jour quotidiennement par notre IA et vérifiées par des experts.' },
+            { q: 'Puis-je lier directement mon catalogue Shopify ?', a: 'Oui, l\'intégration Shopify se fait en un clic via notre API. Chaque nouveau produit ajouté à votre boutique est automatiquement analysé selon vos marchés cibles.' },
+            { q: 'Les rapports générés ont-ils une valeur légale ?', a: 'Les rapports Comvera prouvent votre "due diligence" (diligence raisonnable). Ils sont reconnus par les douanes pour accélérer les contrôles, bien qu\'ils ne remplacent pas un conseiller juridique.' },
+            { q: 'Puis-je annuler mon abonnement à tout moment ?', a: 'Absolument. Nos abonnements sont sans engagement. Vous pouvez annuler, mettre en pause ou changer de forfait directement depuis vos paramètres de facturation.' }
+          ].map((faq, i) => (
+            <div key={i} className="glass-panel fade-in-up" style={{ padding: '1.5rem', animationDelay: `${i * 0.1}s` }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <CheckCircle2 size={18} color="var(--accent-blue)" /> {faq.q}
+              </h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, paddingLeft: '1.9rem' }}>
+                {faq.a}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CONTACT SECTION */}
+      <section id="contact" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', width: '100%', scrollMarginTop: '80px' }}>
+        <div className="glass-panel glass-glow fade-in-up" style={{ padding: '4rem 2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 700 }}>Prêt à conquérir de nouveaux marchés ?</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px' }}>
+            Parlez à l'un de nos experts en conformité ou démarrez votre essai gratuit dès aujourd'hui.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button className="btn btn-primary btn-lg" onClick={onOpenAuth}>Démarrer gratuitement</button>
+            <button className="btn btn-secondary btn-lg">Nous contacter</button>
+          </div>
+        </div>
+      </section>
+
       {/* 6. SCROLLING MARQUEE TICKER */}
       <div className="marquee-container">
         <div className="marquee-track">
