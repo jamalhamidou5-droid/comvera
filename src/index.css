@@ -420,3 +420,21 @@ a:hover {
     box-shadow: none !important;
   }
 }
+
+/* Icon Animations */
+.lucide {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.25s ease;
+}
+
+.hover-lift:hover .lucide,
+.btn:hover .lucide {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.badge:hover .lucide {
+  transform: scale(1.2) rotate(10deg);
+}
+
+.glass-panel:hover .lucide {
+  transform: scale(1.1) translateY(-2px);
+}

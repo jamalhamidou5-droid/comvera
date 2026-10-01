@@ -449,6 +449,61 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </div>
       </section>
+      {/* 6. FOOTER SECTION */}
+      <footer style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '4rem', marginTop: '2rem' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '2rem' }}>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', gridColumn: 'span 2' }}>
+            <div className="brand-logo" style={{ marginBottom: '0.5rem' }}>
+              <ShieldCheck size={24} color="var(--accent-blue)" /> Comvera
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <span className="badge badge-info" style={{ width: 'fit-content' }}>
+                <CheckCircle2 size={12} /> GDPR Compliant
+              </span>
+              <span className="badge badge-ready" style={{ width: 'fit-content' }}>
+                <ShieldCheck size={12} /> AICPA SOC 2 Type II
+              </span>
+            </div>
+            <p style={{ color: 'var(--text-dim)', fontSize: '0.875rem', marginTop: '1rem' }}>
+              © {new Date().getFullYear()} Comvera. All rights reserved.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <h4 style={{ color: 'var(--text-main)', fontWeight: 600, marginBottom: '0.5rem' }}>Platform</h4>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Compliance Engine</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Global Markets Hub</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Document Generator</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>API & Webhooks</a>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <h4 style={{ color: 'var(--text-main)', fontWeight: 600, marginBottom: '0.5rem' }}>Company</h4>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>About Comvera</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Case Studies</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Partners Program</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Contact Sales</a>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <h4 style={{ color: 'var(--text-main)', fontWeight: 600, marginBottom: '0.5rem' }}>Resources</h4>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Global Trade Blog</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Customs Documentation</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Security & SOC 2</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Privacy Policy</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Terms of Service</a>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <h4 style={{ color: 'var(--text-main)', fontWeight: 600, marginBottom: '0.5rem' }}>Compare</h4>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>vs Manual Legal Audit</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>vs Agency Retainers</a>
+            <a href="#" style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>vs Local Consultants</a>
+          </div>
+
+        </div>
+      </footer>
     </div>
   );
 };
