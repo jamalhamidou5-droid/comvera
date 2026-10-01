@@ -439,6 +439,12 @@ a:hover {
   transform: scale(1.1) translateY(-2px);
 }
 
+@media (max-width: 768px) {
+  .public-nav-links {
+    display: none !important;
+  }
+}
+
 /* ====== FLOATING BADGE ANIMATIONS (izimelo-style) ====== */
 @keyframes float-1 {
   0%, 100% { transform: translateY(0px) rotate(-3deg); }

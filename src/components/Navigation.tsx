@@ -49,8 +49,19 @@ export const Navigation: React.FC<NavigationProps> = ({
         </div>
       </div>
 
-      {/* Mode Switcher */}
-      <div className="mode-pill-selector">
+      {/* Public Navigation Links (Only visible on Landing Page) */}
+      {mode === 'public' && (
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="public-nav-links">
+          <a href="#features" className="hover-lift" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 500 }}>Fonctionnalités</a>
+          <a href="#how-it-works" className="hover-lift" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 500 }}>Comment ça marche</a>
+          <a href="#pricing" className="hover-lift" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 500 }}>Tarifs</a>
+          <a href="#faq" className="hover-lift" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 500 }}>FAQ</a>
+          <a href="#contact" className="hover-lift" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 500 }}>Contact</a>
+        </div>
+      )}
+
+      {/* Mode Switcher (Keep for demo/navigation purposes) */}
+      <div className="mode-pill-selector" style={{ display: mode === 'public' ? 'none' : 'flex' }}>
         <button
           className={`mode-btn ${mode === 'public' ? 'active' : ''}`}
           onClick={() => setMode('public')}
