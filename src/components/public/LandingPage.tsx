@@ -407,7 +407,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             Rejoignez plus de 200 000 utilisateurs qui sécurisent leurs ventes avec Comvera.
           </p>
           <div className="fade-in-up fade-in-up-delay-2" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem', color: '#f59e0b' }}>
-            {'★★★★★'.split('').map((star, i) => <span key={i} style={{ fontSize: '1.25rem' }}>{star}</span>)}
+            {'★★★★★'.split('').map((star, i) => <span key={i} style={{ fontSize: '1.8rem' }}>{star}</span>)}
           </div>
         </div>
 
@@ -418,7 +418,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             { name: 'Elena G.', role: 'E-commerce Manager', text: '"La génération de rapports douaniers en un clic a complètement transformé notre workflow d\'expédition."' }
           ].map((avis, index) => (
             <div key={index} className="glass-panel hover-lift fade-in-up" style={{ padding: '2rem', animationDelay: `${index * 0.15}s` }}>
-              <div style={{ color: '#f59e0b', fontSize: '1.2rem', marginBottom: '1rem' }}>★★★★★</div>
+              <div style={{ color: '#f59e0b', fontSize: '1.5rem', marginBottom: '1rem', letterSpacing: '2px' }}>★★★★★</div>
               <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '1.5rem', lineHeight: 1.6 }}>{avis.text}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff' }}>
