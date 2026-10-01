@@ -13,7 +13,9 @@ import {
   Layers,
   Store,
   Building2,
-  ChevronRight
+  ChevronRight,
+  X,
+  Mail
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -27,6 +29,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 }) => {
   const [selectedTab, setSelectedTab] = useState<'FR' | 'JP' | 'BR'>('JP');
   const [showCaseStudyDetail, setShowCaseStudyDetail] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '5rem', paddingBottom: '4rem' }}>
@@ -536,7 +539,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
             <button className="btn btn-primary btn-lg" onClick={onOpenAuth}>Démarrer gratuitement</button>
-            <a href="mailto:hello.comvera@gmail.com" className="btn btn-secondary btn-lg" style={{ textDecoration: 'none' }}>Nous contacter</a>
+            <button className="btn btn-secondary btn-lg" onClick={() => setIsContactModalOpen(true)}>Nous contacter</button>
           </div>
         </div>
       </section>
@@ -616,6 +619,55 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         </div>
       </footer>
+
+      {/* Contact Modal */}
+      {isContactModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsContactModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Mail size={22} color="var(--accent-blue)" /> Contactez-nous
+              </h3>
+              <button
+                onClick={() => setIsContactModalOpen(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+              Avez-vous une question concernant l'intégration de Comvera ou notre tarification ? Vous pouvez nous écrire directement.
+            </p>
+
+            <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Mail size={18} color="#60a5fa" />
+              <span style={{ fontWeight: 600, color: '#93c5fd' }}>hello.comvera@gmail.com</span>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label">Votre message</label>
+              <textarea 
+                className="input-field" 
+                rows={4} 
+                placeholder="Comment pouvons-nous vous aider ?"
+                style={{ resize: 'none' }}
+              ></textarea>
+            </div>
+
+            <button 
+              className="btn btn-primary" 
+              style={{ width: '100%', marginTop: '0.5rem', padding: '0.75rem' }}
+              onClick={() => {
+                alert('Merci ! Votre message a été simulé avec succès.');
+                setIsContactModalOpen(false);
+              }}
+            >
+              Envoyer le message <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
