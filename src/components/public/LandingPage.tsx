@@ -536,7 +536,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
             <button className="btn btn-primary btn-lg" onClick={onOpenAuth}>Démarrer gratuitement</button>
-            <button className="btn btn-secondary btn-lg">Nous contacter</button>
+            <a href="mailto:hello.comvera@gmail.com" className="btn btn-secondary btn-lg" style={{ textDecoration: 'none' }}>Nous contacter</a>
           </div>
         </div>
       </section>
