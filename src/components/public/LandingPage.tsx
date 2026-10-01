@@ -39,10 +39,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '3rem',
-          alignItems: 'center'
+          alignItems: 'center',
+          position: 'relative'
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {/* Floating Badges (izimelo-style) */}
+        <div className="floating-badge floating-badge--1" style={{ top: '10px', left: '5%' }}>
+          <ShieldCheck size={16} /> Customs
+        </div>
+        <div className="floating-badge floating-badge--2" style={{ top: '60px', right: '3%' }}>
+          <CheckCircle2 size={16} /> Sanctions
+        </div>
+        <div className="floating-badge floating-badge--3" style={{ bottom: '80px', left: '2%' }}>
+          <FileCheck size={16} /> HS Codes
+        </div>
+        <div className="floating-badge floating-badge--4" style={{ bottom: '40px', right: '8%' }}>
+          <Globe2 size={16} /> GDPR
+        </div>
+        <div className="fade-in-up" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div
             style={{
               display: 'inline-flex',
@@ -62,23 +76,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <h1
+            className="hero-title-shimmer fade-in-up fade-in-up-delay-1"
             style={{
               fontSize: '3.2rem',
               fontWeight: 800,
-              lineHeight: 1.15,
-              background: 'linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+              lineHeight: 1.15
             }}
           >
             Check any international transaction. Get explainable risk results in minutes.
           </h1>
 
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.125rem', lineHeight: 1.6 }}>
+          <p className="fade-in-up fade-in-up-delay-2" style={{ color: 'var(--text-muted)', fontSize: '1.125rem', lineHeight: 1.6 }}>
             Comvera helps import/export businesses identify potential compliance risks, sanctions, and restricted parties, and document their review process instantly.
           </p>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+          <div className="fade-in-up fade-in-up-delay-3" style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
             <button className="btn btn-primary btn-lg" onClick={onOpenAuth}>
               Run your first check <ArrowRight size={18} />
             </button>
@@ -87,7 +99,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </button>
           </div>
 
-          <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+          <div className="fade-in-up fade-in-up-delay-4" style={{ display: 'flex', gap: '2rem', marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
             <div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>50+</div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Pays couverts</div>
@@ -104,7 +116,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         {/* Hero Interactive Card Preview */}
-        <div className="glass-panel glass-glow hover-lift" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="glass-panel glass-glow hover-lift fade-in-up fade-in-up-delay-3" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
             <div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Product Compliance</div>
@@ -146,7 +158,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>82%</span>
             </div>
             <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '999px', overflow: 'hidden' }}>
-              <div style={{ width: '82%', height: '100%', background: 'linear-gradient(90deg, #f59e0b 0%, #34d399 100%)' }} />
+              <div className="progress-bar-animated" style={{ '--target-width': '82%', height: '100%', background: 'linear-gradient(90deg, #f59e0b 0%, #34d399 100%)' } as React.CSSProperties} />
             </div>
           </div>
         </div>
@@ -449,7 +461,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </div>
       </section>
-      {/* 6. FOOTER SECTION */}
+      {/* 6. SCROLLING MARQUEE TICKER */}
+      <div className="marquee-container">
+        <div className="marquee-track">
+          {[...Array(2)].map((_, i) => (
+            <React.Fragment key={i}>
+              <span className="marquee-item"><span className="marquee-dot" /> Customs Compliance</span>
+              <span className="marquee-item"><span className="marquee-dot" /> Sanctions Screening</span>
+              <span className="marquee-item"><span className="marquee-dot" /> HS Classification</span>
+              <span className="marquee-item"><span className="marquee-dot" /> Document Generation</span>
+              <span className="marquee-item"><span className="marquee-dot" /> GDPR Compliance</span>
+              <span className="marquee-item"><span className="marquee-dot" /> Risk Assessment</span>
+              <span className="marquee-item"><span className="marquee-dot" /> Trade Intelligence</span>
+              <span className="marquee-item"><span className="marquee-dot" /> Market Entry</span>
+              <span className="marquee-item"><span className="marquee-dot" /> Cross-Border E-Commerce</span>
+              <span className="marquee-item"><span className="marquee-dot" /> Regulatory Updates</span>
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* 7. FOOTER SECTION */}
       <footer style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '4rem', marginTop: '2rem' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '2rem' }}>
           
